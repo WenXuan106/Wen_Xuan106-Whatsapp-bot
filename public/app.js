@@ -60,6 +60,7 @@ submitBtn.addEventListener("click", async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Something went wrong.");
+    submitBtn.textContent = "generating code…";
   } catch (err) {
     entryError.textContent = err.message;
     entryError.hidden = false;
