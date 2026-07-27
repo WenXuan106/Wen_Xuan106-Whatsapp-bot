@@ -7,9 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Start with no phone number yet — socket boots in "idle" state
-// until someone submits a number through the website.
-startSocket().catch((err) => console.error("Failed to start socket:", err));
+// We do NOT start a socket on boot anymore — starting one here and then
+// starting a second one when the user submits a phone number caused two
+// sockets to race over the same session files and invalidate pairing
+// codes. The first socket is now only created once someone requests a
+// pairing code below.
 
 // Website calls this after the user types their WhatsApp number.
 app.post("/api/pair", async (req, res) => {
