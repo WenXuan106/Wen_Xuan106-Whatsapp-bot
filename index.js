@@ -1,3 +1,26 @@
+// Some of Baileys' own dependencies (undici, specifically) reference the
+// global `File` class that Node only exposes automatically from v20
+// onward. On older Node (e.g. Railway's default v18 builder) requiring
+// Baileys crashes immediately with "ReferenceError: File is not defined"
+// before the app even starts. This MUST run before anything below
+// requires Baileys, directly or indirectly.
+if (typeof globalThis.File === "undefined") {
+  try {
+    globalThis.File = require("node:buffer").File;
+  } catch (_) {
+    // Extremely old Node without buffer.File either — build a minimal
+    // shim on top of Blob, which has been available much longer.
+    const { Blob } = require("node:buffer");
+    globalThis.File = class File extends Blob {
+      constructor(chunks, name, options = {}) {
+        super(chunks, options);
+        this.name = name;
+        this.lastModified = options.lastModified ?? Date.now();
+      }
+    };
+  }
+}
+
 const express = require("express");
 const path = require("path");
 const config = require("./config");
