@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pair Device</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="console">
+    <div class="console__bar">
+      <span class="dot dot--r"></span>
+      <span class="dot dot--y"></span>
+      <span class="dot dot--g"></span>
+      <span class="console__title">wa-link ~ terminal</span>
+    </div>
+
+    <div class="console__body">
+      <p class="brand">wa-link<span class="cursor">_</span></p>
+      <p class="sub">Pair this device to your WhatsApp account.</p>
+
+      <div id="screen-entry" class="screen">
+        <label class="field">
+          <span class="field__label">$ enter number (with country code)</span>
+          <input id="phone" type="tel" inputmode="numeric" placeholder="15551234567" autocomplete="off" />
+        </label>
+        <button id="submit" class="btn">request pairing code</button>
+        <p id="entry-error" class="error" hidden></p>
+      </div>
+
+      <div id="screen-code" class="screen" hidden>
+        <p class="field__label">$ pairing code issued</p>
+        <div class="code" id="code">— — — —</div>
+        <ol class="steps">
+          <li>Open WhatsApp → Settings → Linked Devices</li>
+          <li>Tap "Link a device"</li>
+          <li>Choose "Link with phone number instead"</li>
+          <li>Enter the code above before it expires</li>
+        </ol>
+        <p class="status" id="status-line">status: awaiting confirmation…</p>
+      </div>
+
+      <div id="screen-connected" class="screen" hidden>
+        <div class="check">✓</div>
+        <p class="field__label">status: link established</p>
+        <p class="sub">This device is now connected to your WhatsApp.</p>
+      </div>
+    </div>
+
+    <div class="console__footer">
+      <span id="footer-status">status: idle</span>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
