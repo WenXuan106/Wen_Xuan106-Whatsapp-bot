@@ -24,17 +24,21 @@ if (typeof globalThis.File === "undefined") {
 const express = require("express");
 const path = require("path");
 const config = require("./config");
-const { startSocket, getState, onUpdate } = require("./lib/whatsapp");
+const { startSocket, getState, onUpdate, resumeSavedSession } = require("./lib/whatsapp");
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// We do NOT start a socket on boot anymore — starting one here and then
-// starting a second one when the user submits a phone number caused two
-// sockets to race over the same session files and invalidate pairing
-// codes. The first socket is now only created once someone requests a
-// pairing code below.
+// We do NOT unconditionally start a socket on boot — starting one here and
+// then starting a second one when the user submits a phone number caused
+// two sockets to race over the same session files and invalidate pairing
+// codes. Instead, resumeSavedSession() only starts a socket on boot if
+// valid, already-registered credentials exist on disk — that path never
+// requests a pairing code, so it can't collide with a fresh pairing
+// attempt. Otherwise (no saved session), a socket is only created once
+// someone requests a pairing code below.
+resumeSavedSession();
 
 // Website calls this after the user types their WhatsApp number.
 app.post("/api/pair", async (req, res) => {
@@ -44,7 +48,7 @@ app.post("/api/pair", async (req, res) => {
   }
 
   try {
-    await startSocket({ phoneNumber });
+    await startSocket({ phoneNumber, forceReset: true });
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,7 +60,7 @@ app.post("/api/pair", async (req, res) => {
 // number after repeated attempts.
 app.post("/api/pair-qr", async (req, res) => {
   try {
-    await startSocket({});
+    await startSocket({ forceReset: true });
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
