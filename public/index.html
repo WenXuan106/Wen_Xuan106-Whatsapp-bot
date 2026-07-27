@@ -27,7 +27,21 @@
           <input id="phone" type="tel" inputmode="numeric" placeholder="15551234567" autocomplete="off" />
         </label>
         <button id="submit" class="btn">request pairing code</button>
+        <button id="use-qr" class="btn btn--ghost">use QR code instead</button>
         <p id="entry-error" class="error" hidden></p>
+      </div>
+
+      <div id="screen-qr" class="screen" hidden>
+        <p class="field__label">$ scan with WhatsApp</p>
+        <div class="qr-wrap">
+          <img id="qr-image" alt="WhatsApp QR code" />
+        </div>
+        <ol class="steps">
+          <li>Open WhatsApp → Settings → Linked Devices</li>
+          <li>Tap "Link a device"</li>
+          <li>Scan the code above with your phone's camera</li>
+        </ol>
+        <p class="status" id="qr-status-line">status: awaiting scan…</p>
       </div>
 
       <div id="screen-code" class="screen" hidden>

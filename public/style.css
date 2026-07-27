@@ -117,6 +117,23 @@ input::placeholder { color: #3f4a41; }
 .btn:hover { background: var(--amber); color: #0b0f0d; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; background: transparent; color: var(--amber); }
 
+.btn--ghost {
+  margin-top: 10px;
+  border-color: var(--line);
+  color: var(--muted);
+}
+.btn--ghost:hover { background: var(--line); color: var(--text); }
+
+.qr-wrap {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.qr-wrap img { width: 100%; max-width: 260px; display: block; }
+
 .error {
   margin-top: 10px;
   font-family: var(--mono);
