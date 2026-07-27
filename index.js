@@ -28,6 +28,18 @@ app.post("/api/pair", async (req, res) => {
   }
 });
 
+// Alternative pairing method — classic QR scan, no phone number needed.
+// Useful if WhatsApp is throttling phone-number pairing codes for your
+// number after repeated attempts.
+app.post("/api/pair-qr", async (req, res) => {
+  try {
+    await startSocket({});
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Website polls this to show the code and connection status live.
 app.get("/api/status", (req, res) => {
   res.json(getState());
