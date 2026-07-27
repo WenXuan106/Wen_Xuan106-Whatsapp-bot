@@ -1,0 +1,45 @@
+# Fly.io config — an alternative to render.yaml.
+#
+# Why you might pick this over Render's free tier:
+#   - Render's free plan spins the service down after ~15 min idle, so the
+#     first message after a quiet period pays a slow cold-start (WhatsApp
+#     reconnect) before the bot answers.
+#   - Render's free plan also has no persistent disk, so auth_info_baileys/
+#     (your login) is wiped on every restart — you re-pair constantly.
+# Fly's free allowance includes a small persistent volume and, on the
+# shared-cpu-1x/256mb size, machines that stay running rather than being
+# torn down on a timer — much closer to what a long-lived WhatsApp socket
+# needs.
+#
+# Setup (from this folder, after installing flyctl and running `fly auth login`):
+#   fly launch --no-deploy        # generates an app name, skip its own Dockerfile prompt
+#   fly volumes create wa_session --size 1   # 1GB persistent volume
+#   fly deploy
+# Then visit https://<your-app>.fly.dev to pair.
+
+app = "my-whatsapp-bot"        # change to whatever `fly launch` assigns
+primary_region = "sin"         # pick the region closest to you
+
+[build]
+  builder = "heroku/buildpacks:20"   # detects Node + package.json automatically
+
+[env]
+  PORT = "3000"
+  PREFIX = "!"
+  BOT_NAME = "My WhatsApp Bot"
+  AUTH_FOLDER = "/data/auth_info_baileys"
+
+[mounts]
+  source = "wa_session"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false   # keep it running instead of scaling to zero
+  auto_start_machines = true
+  min_machines_running = 1     # always-on, so no cold start on the next message
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
