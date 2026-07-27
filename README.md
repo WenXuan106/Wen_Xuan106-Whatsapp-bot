@@ -54,24 +54,29 @@ module.exports = {
 
 It's picked up automatically — no need to register it anywhere else.
 
-## Deploying to Render (like the site you linked)
+## Deploying to Render — free tier
 
-This repo includes a `render.yaml` Blueprint, so Render can configure itself automatically:
+This repo includes a `render.yaml` Blueprint set up for Render's **free plan**:
 
-1. Push this project to a GitHub repo.
-2. On Render: **New → Blueprint**, connect the repo. Render reads `render.yaml` and sets up the
-   build command, start command, and disk for you.
+1. Push this project to a GitHub repo (all files, including `lib/admin.js` — Render's error logs
+   will tell you exactly which file is missing if a require fails after deploy, so check those
+   first if something breaks).
+2. On Render: **New → Blueprint**, connect the repo. Render reads `render.yaml` and configures
+   the build/start commands automatically.
 3. Click **Apply**, then **Deploy**.
-4. Once it's live, visit your Render URL to pair, the same way as locally.
+4. Once it's live, visit your Render URL to pair, same as locally.
 
-**Important — this needs a paid Render plan, not the free one.** Render's persistent disks
-(which is what keeps your `auth_info_baileys/` session folder from being wiped) require the
-Starter plan or above (~$7/mo). The free plan doesn't support disks at all, and also spins down
-after 15 minutes idle — so on free tier your WhatsApp session gets erased on basically every
-restart and you'd end up re-pairing constantly. `render.yaml` is set to `plan: starter` for this
-reason. If you just want to test the pairing UI without keeping a real connection alive, you can
-change it to `plan: free` and delete the `disk:` block, but don't expect the bot to stay
-connected.
+**The tradeoff of free tier:** Render's free plan doesn't support persistent disks, so your
+`auth_info_baileys/` session folder is wiped on every restart. Free-tier services also spin down
+after ~15 minutes with no web traffic and cold-start on the next request — so realistically,
+you'll need to re-pair every so often rather than staying connected indefinitely. That's the
+cost of $0/month; if you want it to stay paired continuously, that requires a paid plan
+(Starter, ~$7/mo) with a disk attached — happy to switch the config back to that if you change
+your mind later.
+
+**Tip to reduce how often you re-pair:** a free uptime pinger (e.g. UptimeRobot) hitting your
+Render URL every 5 minutes keeps the service from spinning down due to inactivity — it won't
+survive an actual Render-initiated restart/redeploy, but it cuts down on the idle-timeout kind.
 
 ## Notes on the Knightbot-md reference
 

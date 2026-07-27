@@ -8,11 +8,11 @@
     "start": "node index.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0 <21.0.0"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "^6.7.22",
     "express": "^4.19.2",
     "pino": "^9.3.2",
     "qrcode": "^1.5.3",

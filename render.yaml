@@ -1,28 +1,23 @@
 # Render Blueprint — lets Render auto-configure this service from the repo.
 # Deploy: push this repo to GitHub, then on Render click
 # New -> Blueprint and point it at the repo. Render reads this file
-# and sets everything up (build command, start command, disk) for you.
+# and sets everything up (build command, start command) for you.
 #
-# IMPORTANT: persistent disks require a paid plan (starter or above) on
-# Render — the free plan does not support them. Without a disk, your
-# WhatsApp session (auth_info_baileys/) is wiped on every restart, and
-# free-tier services restart constantly (they spin down after 15 min
-# idle), so you'd have to re-pair over and over. If you want to try
-# this on the free plan anyway to test the pairing flow, change
-# `plan: starter` to `plan: free` and delete the `disk:` block below —
-# just know you'll need to re-pair after every spin-down.
+# FREE PLAN NOTE: Render's free plan doesn't support persistent disks, so
+# the auth_info_baileys/ session folder is wiped every time the service
+# restarts. Free-tier services also spin down after ~15 min of no web
+# traffic and restart on the next request — so expect to re-pair
+# periodically rather than staying connected indefinitely. If you later
+# want the session to persist, switch plan to `starter` and add a disk
+# block (see render.yaml history / ask me and I'll add it back).
 
 services:
   - type: web
     name: whatsapp-bot
     env: node
-    plan: starter
+    plan: free
     buildCommand: npm install
     startCommand: npm start
-    disk:
-      name: wa-session
-      mountPath: /opt/render/project/src/auth_info_baileys
-      sizeGB: 1
     envVars:
       - key: PREFIX
         value: "!"
