@@ -1,0 +1,9 @@
+node_modules/
+
+# WhatsApp session credentials — anyone with these can control your account
+auth_info_baileys/
+
+.env
+.env.*
+*.log
+.DS_Store
