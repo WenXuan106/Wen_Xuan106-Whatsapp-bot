@@ -21,6 +21,16 @@ if (typeof globalThis.File === "undefined") {
   }
 }
 
+// Baileys also expects the Web Crypto API available as the global
+// `crypto` object, which Node only exposes automatically from v20
+// onward. On older Node this crashes every socket attempt at runtime
+// with "ReferenceError: crypto is not defined" — not at require time,
+// so it looks like a connection problem rather than a Node version
+// problem. Same fix pattern as the File polyfill above.
+if (typeof globalThis.crypto === "undefined") {
+  globalThis.crypto = require("node:crypto").webcrypto;
+}
+
 const express = require("express");
 const path = require("path");
 const config = require("./config");
