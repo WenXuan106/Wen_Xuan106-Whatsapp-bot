@@ -8,8 +8,7 @@ module.exports = {
       return sock.sendMessage(jid, { text: "This command only works in groups." });
     }
 
-    const sender = msg.key.participant || msg.key.remoteJid;
-    const { senderIsAdmin, botIsAdmin } = await getGroupAdminStatus(sock, jid, sender, getGroupMetadata);
+    const { senderIsAdmin, botIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
 
     if (!senderIsAdmin) {
       return sock.sendMessage(jid, { text: "Only group admins can use this command." });

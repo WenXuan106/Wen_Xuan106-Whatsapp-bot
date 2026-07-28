@@ -9,8 +9,7 @@ module.exports = {
 
     if (jid.endsWith("@g.us")) {
       const { getGroupAdminStatus } = require("../lib/admin");
-      const sender = msg.key.participant || msg.key.remoteJid;
-      const { senderIsAdmin } = await getGroupAdminStatus(sock, jid, sender, getGroupMetadata);
+      const { senderIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
       if (!senderIsAdmin) {
         return sock.sendMessage(jid, { text: "Only group admins can delete others' messages." });
       }
