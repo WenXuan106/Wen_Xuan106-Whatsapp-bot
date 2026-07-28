@@ -1,5 +1,3 @@
-module.exports = {
-  name: "tts",
 const gTTS = require('gtts');
 const fs = require('fs');
 const path = require('path');
@@ -29,4 +27,5 @@ async function ttsCommand(sock, chatId, text, message, language = 'en') {
     });
 }
 
-module.exports = ttsCommand;
+module.exports = {
+  name: "tts"
