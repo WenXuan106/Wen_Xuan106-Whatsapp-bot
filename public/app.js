@@ -103,6 +103,17 @@ useQrBtn.addEventListener("click", async () => {
 const source = new EventSource("/api/stream");
 source.onmessage = (event) => render(JSON.parse(event.data));
 
+// If the stream connection drops (proxy timeout, network blip, etc.),
+// EventSource retries on its own, but there can be a gap before it
+// reconnects. Poll /api/status as a safety net so the QR/code on screen
+// never goes stale for more than a few seconds.
+source.onerror = () => {
+  fetch("/api/status")
+    .then((r) => r.json())
+    .then(render)
+    .catch(() => {});
+};
+
 // Initial state in case the stream is slow to open
 fetch("/api/status")
   .then((r) => r.json())
