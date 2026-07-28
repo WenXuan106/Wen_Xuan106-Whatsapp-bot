@@ -96,7 +96,20 @@ app.get("/api/stream", (req, res) => {
     res.write(`data: ${JSON.stringify(state)}\n\n`);
   });
 
-  req.on("close", unsubscribe);
+  // Hosting proxies (Railway included) tend to silently close HTTP
+  // connections that go quiet for too long. Baileys only pushes an
+  // update roughly every 20-30s while awaiting a QR scan, which can be
+  // just long enough to hit that idle timeout — so the stream dies and
+  // the page stops receiving fresh QR codes without any visible error.
+  // A comment line every 15s counts as traffic and keeps it open.
+  const heartbeat = setInterval(() => {
+    res.write(`: heartbeat\n\n`);
+  }, 15000);
+
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    unsubscribe();
+  });
 });
 
 app.listen(config.PORT, () => {
