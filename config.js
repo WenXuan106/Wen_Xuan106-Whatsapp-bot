@@ -11,4 +11,7 @@ module.exports = {
 
   // Your bot's display name in some client UIs
   BOT_NAME: process.env.BOT_NAME || "My WhatsApp Bot",
+
+  // Shown as "Owner" in the .help / .menu command
+  OWNER_NAME: process.env.OWNER_NAME || "",
 };
