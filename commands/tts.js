@@ -1,7 +1,45 @@
 const googleTTS = require("google-tts-api");
+const { spawn } = require("child_process");
 
 const MAX_CHARS = 2000; // hard cap so one command can't loop forever
 const DEFAULT_LANG = "en";
+
+// WhatsApp voice notes (ptt: true) must be Ogg/Opus, not raw mp3. Sending
+// mp3 bytes with ptt:true can look fine in the chat list and even "play" on
+// Android, but iOS WhatsApp rejects it outright with "this voice message
+// isn't available" — because the container/codec don't match what a real
+// voice note is. This transcodes with ffmpeg (already required on PATH for
+// the attp/anime commands — see nixpacks.toml/Dockerfile) into a 16kHz mono
+// Opus-in-Ogg stream, which is what WhatsApp actually expects for ptt notes.
+function mp3ToOggOpus(mp3Buffer) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      "-y",
+      "-i", "pipe:0",
+      "-ac", "1",
+      "-ar", "16000",
+      "-c:a", "libopus",
+      "-b:a", "32k",
+      "-vn",
+      "-f", "ogg",
+      "pipe:1",
+    ];
+
+    const ff = spawn("ffmpeg", args);
+    const chunks = [];
+    const errors = [];
+    ff.stdout.on("data", (d) => chunks.push(d));
+    ff.stderr.on("data", (e) => errors.push(e));
+    ff.on("error", reject);
+    ff.on("close", (code) => {
+      if (code === 0) return resolve(Buffer.concat(chunks));
+      reject(new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`));
+    });
+
+    ff.stdin.write(mp3Buffer);
+    ff.stdin.end();
+  });
+}
 
 module.exports = {
   name: "tts",
@@ -56,11 +94,18 @@ module.exports = {
         if (!res.ok) throw new Error(`Google TTS request failed: ${res.status}`);
         buffers.push(Buffer.from(await res.arrayBuffer()));
       }
-      const audio = Buffer.concat(buffers);
+      const mp3 = Buffer.concat(buffers);
+      const audio = await mp3ToOggOpus(mp3);
 
       // ptt: true sends it as a playable voice note rather than a
-      // downloadable audio file attachment.
-      await sock.sendMessage(jid, { audio, mimetype: "audio/mpeg", ptt: true }, { quoted: msg });
+      // downloadable audio file attachment. It must be Ogg/Opus (not the
+      // raw mp3 Google returns) or WhatsApp — especially on iOS — will
+      // show it as an unplayable/corrupt voice note.
+      await sock.sendMessage(
+        jid,
+        { audio, mimetype: "audio/ogg; codecs=opus", ptt: true },
+        { quoted: msg }
+      );
     } catch (err) {
       console.error("tts command failed:", err);
       await sock.sendMessage(
