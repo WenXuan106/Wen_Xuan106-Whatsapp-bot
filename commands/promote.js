@@ -1,4 +1,4 @@
-const { getGroupAdminStatus, getMentionedJid, getQuotedParticipant } = require("../lib/admin");
+const { getGroupAdminStatus, getMentionedJid, getQuotedParticipant, resolveParticipantId } = require("../lib/admin");
 
 module.exports = {
   name: "promote",
@@ -8,7 +8,7 @@ module.exports = {
       return sock.sendMessage(jid, { text: "This command only works in groups." });
     }
 
-    const { senderIsAdmin, botIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
+    const { senderIsAdmin, botIsAdmin, participants } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
 
     if (!senderIsAdmin) {
       return sock.sendMessage(jid, { text: "Only group admins can use this command." });
@@ -17,14 +17,18 @@ module.exports = {
       return sock.sendMessage(jid, { text: "I need to be a group admin to do that." });
     }
 
-    const target = getMentionedJid(msg) || getQuotedParticipant(msg);
-    if (!target) {
+    const rawTarget = getMentionedJid(msg) || getQuotedParticipant(msg);
+    if (!rawTarget) {
       return sock.sendMessage(jid, {
         text: "Reply to the person's message or @mention them, e.g. !promote @user",
       });
     }
+    const target = await resolveParticipantId(sock, participants, rawTarget);
 
-    await sock.groupParticipantsUpdate(jid, [target], "promote");
-    await sock.sendMessage(jid, { text: "Done." });
+    const result = await sock.groupParticipantsUpdate(jid, [target], "promote");
+    const ok = result?.[0]?.status === "200";
+    await sock.sendMessage(jid, {
+      text: ok ? "Done." : "Couldn't promote that member — WhatsApp rejected the request.",
+    });
   },
 };

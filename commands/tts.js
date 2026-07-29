@@ -58,11 +58,9 @@ module.exports = {
       }
       const audio = Buffer.concat(buffers);
 
-      // NOTE: ptt:true (voice note bubble) requires Opus-encoded audio —
-      // sending raw mp3 that way shows up in WhatsApp as a corrupt,
-      // unplayable voice note. Sending it as a regular audio attachment
-      // avoids needing an mp3->opus conversion step (ffmpeg) entirely.
-      await sock.sendMessage(jid, { audio, mimetype: "audio/mpeg" }, { quoted: msg });
+      // ptt: true sends it as a playable voice note rather than a
+      // downloadable audio file attachment.
+      await sock.sendMessage(jid, { audio, mimetype: "audio/mpeg", ptt: true }, { quoted: msg });
     } catch (err) {
       console.error("tts command failed:", err);
       await sock.sendMessage(
