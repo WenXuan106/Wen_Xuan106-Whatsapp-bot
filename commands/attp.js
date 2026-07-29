@@ -1,4 +1,8 @@
 const { spawn } = require("child_process");
+const fs = require("fs/promises");
+const os = require("os");
+const path = require("path");
+const crypto = require("crypto");
 const { addStickerExif } = require("../lib/sticker");
 
 const FONT_PATH =
@@ -61,8 +65,17 @@ function renderBlinkingVideo(text) {
 }
 
 // Pipes the rendered mp4 back through ffmpeg to produce an animated webp.
+//
+// This writes to a real temp file rather than piping to stdout. Animated
+// WebP's RIFF container needs to go back and rewrite size fields in its
+// header after all frames are encoded — that requires a seekable output,
+// which a pipe can't provide. Piping this step (unlike the MP4 step above,
+// which sidesteps the same problem with fragmented-mp4 flags) produces a
+// WebP file with an incorrect/truncated header, which then fails to parse
+// downstream with an error like "Reached end while reading chunk header".
 function mp4ToAnimatedWebp(mp4Buffer) {
   return new Promise((resolve, reject) => {
+    const tmpFile = path.join(os.tmpdir(), `attp-${crypto.randomUUID()}.webp`);
     const args = [
       "-y",
       "-i", "pipe:0",
@@ -75,17 +88,23 @@ function mp4ToAnimatedWebp(mp4Buffer) {
       "-quality", "60",
       "-compression_level", "6",
       "-f", "webp",
-      "pipe:1",
+      tmpFile,
     ];
     const ff = spawn("ffmpeg", args);
-    const chunks = [];
     const errors = [];
-    ff.stdout.on("data", (d) => chunks.push(d));
     ff.stderr.on("data", (e) => errors.push(e));
     ff.on("error", reject);
-    ff.on("close", (code) => {
-      if (code === 0) return resolve(Buffer.concat(chunks));
-      reject(new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`));
+    ff.on("close", async (code) => {
+      try {
+        if (code !== 0) {
+          throw new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`);
+        }
+        resolve(await fs.readFile(tmpFile));
+      } catch (err) {
+        reject(err);
+      } finally {
+        fs.unlink(tmpFile).catch(() => {}); // best-effort cleanup
+      }
     });
     ff.stdin.write(mp4Buffer);
     ff.stdin.end();
@@ -107,7 +126,7 @@ module.exports = {
       const stickerBuffer = await addStickerExif(webpBuffer, { packname: "My WhatsApp Bot" });
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
     } catch (err) {
-      console.error("attp command failed:", err.message);
+      console.error("attp command failed:", err.stack || err.message);
       await sock.sendMessage(jid, { text: "❌ Failed to generate the sticker." }, { quoted: msg });
     }
   },

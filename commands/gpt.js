@@ -18,7 +18,10 @@ module.exports = {
         timeout: 20000,
       });
 
-      if (!data?.status || !data?.result) throw new Error("Invalid response from AI API");
+      if (!data?.status || !data?.result) {
+        console.error("gpt command: unexpected API response shape:", JSON.stringify(data));
+        throw new Error("Invalid response from AI API");
+      }
       await sock.sendMessage(jid, { text: data.result }, { quoted: msg });
     } catch (err) {
       console.error("gpt command failed:", err.message);

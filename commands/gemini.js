@@ -20,15 +20,21 @@ module.exports = {
     }
 
     for (const buildUrl of GEMINI_PROVIDERS) {
+      const url = buildUrl(query);
       try {
-        const res = await fetch(buildUrl(query));
-        if (!res.ok) continue;
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error(`gemini provider failed (${url}): HTTP ${res.status}`);
+          continue;
+        }
         const data = await res.json();
         const answer = data.message || data.data || data.answer || data.result;
         if (answer) {
           return sock.sendMessage(jid, { text: String(answer) }, { quoted: msg });
         }
-      } catch {
+        console.error(`gemini provider returned no usable answer (${url}):`, JSON.stringify(data));
+      } catch (err) {
+        console.error(`gemini provider threw (${url}):`, err.message);
         continue; // try the next provider
       }
     }
