@@ -1,0 +1,6 @@
+# The attp and animu commands shell out to the ffmpeg binary, which is a
+# system package, not an npm one — this tells Railway's Nixpacks builder to
+# install it (and a DejaVu font, which attp needs for drawtext) alongside
+# your Node app.
+[phases.setup]
+nixPkgs = ["ffmpeg", "dejavu_fonts"]

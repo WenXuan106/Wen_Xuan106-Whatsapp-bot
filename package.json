@@ -13,8 +13,10 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.22",
+    "axios": "^1.7.7",
     "express": "^4.19.2",
     "google-tts-api": "^2.0.2",
+    "node-webpmux": "^3.1.7",
     "pino": "^9.3.2",
     "qrcode": "^1.5.3",
     "yt-search": "^2.10.4"
