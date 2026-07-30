@@ -14,4 +14,10 @@ module.exports = {
 
   // Shown as "Owner" in the .help / .menu command
   OWNER_NAME: process.env.OWNER_NAME || "",
+
+  // Optional: digits-only phone number (with country code, no "+") that
+  // should also count as "the owner" for owner-only commands like !stop,
+  // in addition to messages sent from the bot's own linked account
+  // (fromMe). Leave blank if the fromMe check alone is enough for you.
+  OWNER_NUMBER: process.env.OWNER_NUMBER || "",
 };
