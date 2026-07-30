@@ -10,7 +10,7 @@ module.exports = {
   AUTH_FOLDER: process.env.AUTH_FOLDER || "auth_info_baileys",
 
   // Your bot's display name in some client UIs
-  BOT_NAME: process.env.BOT_NAME || "My WhatsApp Bot",
+  BOT_NAME: process.env.BOT_NAME || "Wen_Xuan106's Bot",
 
   // Shown as "Owner" in the .help / .menu command
   OWNER_NAME: process.env.OWNER_NAME || "",
