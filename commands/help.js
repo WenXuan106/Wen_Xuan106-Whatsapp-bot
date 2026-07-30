@@ -4,9 +4,10 @@ const config = require("../config");
 // Anything not listed here still shows up, under "OTHER".
 const CATEGORIES = {
   "🧭 GENERAL": ["help", "ping"],
-  "🛡️ ADMIN": ["delete", "demote", "kick", "mute", "promote", "unmute"],
+  "🛡️ ADMIN": ["delete", "demote", "kick", "mute", "promote", "tagall", "unmute"],
   "🎭 FUN": ["8ball", "answer", "coinflip", "dice", "rps", "trivia"],
   "🎞️ MEDIA": ["song"],
+  "👑 OWNER": ["stop"],
 };
 
 function box(lines) {
