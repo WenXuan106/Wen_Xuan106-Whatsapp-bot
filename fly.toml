@@ -17,16 +17,16 @@
 #   fly deploy
 # Then visit https://<your-app>.fly.dev to pair.
 
-app = "Wen_Xuan106's-Whatsapp-Bot"        # change to whatever `fly launch` assigns
+app = "my-whatsapp-bot"        # change to whatever `fly launch` assigns
 primary_region = "sin"         # pick the region closest to you
 
 [build]
-  builder = "heroku/buildpacks:20"   # detects Node + package.json automatically
+  builder = "heroku/buildpacks:20"
 
 [env]
   PORT = "3000"
   PREFIX = "!"
-  BOT_NAME = "Wen_Xuan106's Whatsapp Bot"
+  BOT_NAME = "Wen_Xuan106’s Whatsapp bot"
   AUTH_FOLDER = "/data/auth_info_baileys"
 
 [mounts]
@@ -36,10 +36,13 @@ primary_region = "sin"         # pick the region closest to you
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = false   # keep it running instead of scaling to zero
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 1     # always-on, so no cold start on the next message
+  min_machines_running = 1
 
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
 [[vm]]
   size = "shared-cpu-1x"
   memory = "256mb"
