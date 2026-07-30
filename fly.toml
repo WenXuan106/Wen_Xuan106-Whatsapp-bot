@@ -17,7 +17,7 @@
 #   fly deploy
 # Then visit https://<your-app>.fly.dev to pair.
 
-app = "my-whatsapp-bot"        # change to whatever `fly launch` assigns
+app = "Wen_Xuan106's-Whatsapp-Bot"        # change to whatever `fly launch` assigns
 primary_region = "sin"         # pick the region closest to you
 
 [build]
@@ -26,7 +26,7 @@ primary_region = "sin"         # pick the region closest to you
 [env]
   PORT = "3000"
   PREFIX = "!"
-  BOT_NAME = "My WhatsApp Bot"
+  BOT_NAME = "Wen_Xuan106's Whatsapp Bot"
   AUTH_FOLDER = "/data/auth_info_baileys"
 
 [mounts]
