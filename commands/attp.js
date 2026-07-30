@@ -4,6 +4,7 @@ const os = require("os");
 const path = require("path");
 const crypto = require("crypto");
 const { addStickerExif } = require("../lib/sticker");
+const config = require("../config");
 
 const FONT_PATH =
   process.platform === "win32"
@@ -123,7 +124,7 @@ module.exports = {
     try {
       const mp4Buffer = await renderBlinkingVideo(text);
       const webpBuffer = await mp4ToAnimatedWebp(mp4Buffer);
-      const stickerBuffer = await addStickerExif(webpBuffer, { packname: "My WhatsApp Bot" });
+      const stickerBuffer = await addStickerExif(webpBuffer, { packname: config.BOT_NAME });
       await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
     } catch (err) {
       console.error("attp command failed:", err.stack || err.message);
