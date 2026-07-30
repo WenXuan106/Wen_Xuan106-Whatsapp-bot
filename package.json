@@ -1,6 +1,6 @@
 {
-  "name": "my-whatsapp-bot",
-  "version": "1.0.0",
+  "name": "Wen_Xuan106's-WhatsApp-Bot",
+  "version": "1.0.1.4",
   "description": "Personal WhatsApp bot with a pairing-code website, built on Baileys.",
   "main": "index.js",
   "type": "commonjs",
