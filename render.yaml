@@ -22,4 +22,4 @@ services:
       - key: PREFIX
         value: "!"
       - key: BOT_NAME
-        value: "My WhatsApp Bot"
+        value: "Wen_Xuan106’s Whatsapp bot"
