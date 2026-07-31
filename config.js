@@ -21,3 +21,12 @@ module.exports = {
   // (fromMe). Leave blank if the fromMe check alone is enough for you.
   OWNER_NUMBER: process.env.OWNER_NUMBER || "",
 };
+
+// Official OpenAI API key, used by the !gpt command. Get one at
+  // https://platform.openai.com/api-keys — without this set, !gpt will
+  // tell users the bot isn't configured instead of trying (and failing)
+  // to reach a free proxy.
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
+
+  // Model used by !gpt. gpt-4o-mini is a good cost/quality default.
+  OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4o-mini", 
