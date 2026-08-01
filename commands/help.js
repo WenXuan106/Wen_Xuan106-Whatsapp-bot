@@ -96,8 +96,8 @@ module.exports = {
         jid,
         {
           text: statusJidList.length
-            ? `✅ Status posted (visible to ${statusJidList.length} contact${statusJidList.length === 1 ? "" : "s"} from this chat).`
-            : "✅ Status posted. (Note: run this from a group or DM so I know who to make it visible to — an empty viewer list means almost no one will see it.)",
+            ? `✅ Status sent (targeted at ${statusJidList.length} contact${statusJidList.length === 1 ? "" : "s"} from this chat).\n\n_Note: due to a known bug in the underlying WhatsApp library, status updates sometimes don't actually appear even when this succeeds with no error. If it doesn't show up on your Status tab, that's this library issue — not a setup problem._`
+            : "✅ Status sent. (Note: run this from a group or DM so I know who to make it visible to — an empty viewer list means almost no one will see it. Also see the note above about a known delivery bug.)",
         },
         { quoted: msg }
       );
