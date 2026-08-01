@@ -1,53 +1,109 @@
-const config = require("../config");
+const { downloadMediaMessage, isJidUser } = require("@whiskeysockets/baileys");
 
-// Which category each command belongs to, for the styled menu below.
-// Anything not listed here still shows up, under "OTHER".
-const CATEGORIES = {
-  "🧭 GENERAL": ["help", "ping"],
-  "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute"],
-  "🎭 FUN": ["8ball", "answer", "coinflip", "dice", "rps", "ship", "trivia", "ttt"],
-  "🎞️ MEDIA": ["lyrics", "song", "status"],
-  "👑 OWNER": ["stop"],
-};
+// WhatsApp only shows a status update to people whose JIDs are listed in
+// statusJidList — it's not enough to just send it to 'status@broadcast'.
+// Since this bot doesn't maintain a full contacts store, it builds a
+// reasonable list from the chat the command was run in: every other
+// participant if run in a group, or the other person if run in a DM.
+// Anyone @mentioned in the command is added on top of that.
+async function buildStatusJidList({ sock, jid, msg, getGroupMetadata }) {
+  const botJid = sock.user?.id;
+  const viewers = new Set();
 
-function box(lines) {
-  const top = "┏━━━━━━━━━━━━━━━━━";
-  const bottom = "┗━━━━━━━━━━━━━━━━━";
-  return [top, ...lines.map((l) => `┃ ${l}`), bottom];
+  if (jid.endsWith("@g.us")) {
+    const metadata = await getGroupMetadata(jid);
+    for (const p of metadata.participants) {
+      if (p.id !== botJid) viewers.add(p.id);
+    }
+  } else if (jid !== "status@broadcast") {
+    viewers.add(jid);
+  }
+
+  const mentioned = msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+  for (const m of mentioned) {
+    if (m !== botJid) viewers.add(m);
+  }
+
+  // Status posting silently fails (no error, nothing appears) if the list
+  // contains anything other than standard @s.whatsapp.net user JIDs — e.g.
+  // @lid-format IDs some accounts get assigned. Filtering to isJidUser is
+  // the one documented Baileys workaround for that.
+  return [...viewers].filter(isJidUser);
+}
+
+function getQuotedMedia(msg) {
+  const context = msg.message?.extendedTextMessage?.contextInfo;
+  const quoted = context?.quotedMessage;
+  if (!quoted) return null;
+
+  const type = quoted.imageMessage ? "image" : quoted.videoMessage ? "video" : null;
+  if (!type) return null;
+
+  // downloadMediaMessage needs a full WAMessage-shaped object (key + message),
+  // not just the bare quotedMessage payload, so this reconstructs one.
+  const syntheticMessage = {
+    key: {
+      remoteJid: msg.key.remoteJid,
+      id: context.stanzaId,
+      fromMe: false,
+      participant: context.participant,
+    },
+    message: quoted,
+  };
+
+  return { type, syntheticMessage };
 }
 
 module.exports = {
-  name: "help",
-  description: "Show the command menu",
-  async execute({ sock, msg, jid, commands }) {
-    const sender = msg.key.participant || msg.key.remoteJid;
-    const categorized = new Set(Object.values(CATEGORIES).flat());
-    const other = [...commands.keys()].filter((name) => !categorized.has(name));
+  name: "status",
+  description: "Post a WhatsApp Status update (text, or reply to an image/video), e.g. !status Good morning!",
+  async execute({ sock, jid, msg, args, getGroupMetadata }) {
+    const caption = args.join(" ").trim();
+    const quotedMedia = getQuotedMedia(msg);
 
-    const lines = [];
-    lines.push(`╭━━『 *${config.BOT_NAME}* 』━━╮`, "");
-    lines.push(`👋 Hello @${sender.split("@")[0]}!`, "");
-    lines.push(`⚡ Prefix: ${config.PREFIX}`);
-    lines.push(`📦 Total Commands: ${commands.size}`);
-    if (config.OWNER_NAME) lines.push(`👑 Owner: ${config.OWNER_NAME}`);
-    lines.push("");
-
-    for (const [category, names] of Object.entries(CATEGORIES)) {
-      const present = names.filter((n) => commands.has(n));
-      if (present.length === 0) continue;
-      lines.push(...box([category]));
-      for (const name of present) lines.push(`│ ➜ ${config.PREFIX}${name}`);
-      lines.push("");
+    if (!quotedMedia && !caption) {
+      return sock.sendMessage(
+        jid,
+        { text: "Usage: !status <text>  —  or reply to an image/video with !status [optional caption]" },
+        { quoted: msg }
+      );
     }
 
-    if (other.length > 0) {
-      lines.push(...box(["🔧 OTHER"]));
-      for (const name of other) lines.push(`│ ➜ ${config.PREFIX}${name}`);
-      lines.push("");
+    try {
+      const statusJidList = await buildStatusJidList({ sock, jid, msg, getGroupMetadata });
+
+      let content;
+      if (quotedMedia) {
+        const buffer = await downloadMediaMessage(
+          quotedMedia.syntheticMessage,
+          "buffer",
+          {},
+          { reuploadRequest: sock.updateMediaMessage }
+        );
+        content = quotedMedia.type === "image"
+          ? { image: buffer, caption: caption || undefined }
+          : { video: buffer, caption: caption || undefined };
+      } else {
+        content = { text: caption };
+      }
+
+      await sock.sendMessage("status@broadcast", content, {
+        broadcast: true,
+        statusJidList,
+      });
+
+      await sock.sendMessage(
+        jid,
+        {
+          text: statusJidList.length
+            ? `✅ Status posted (visible to ${statusJidList.length} contact${statusJidList.length === 1 ? "" : "s"} from this chat).`
+            : "✅ Status posted. (Note: run this from a group or DM so I know who to make it visible to — an empty viewer list means almost no one will see it.)",
+        },
+        { quoted: msg }
+      );
+    } catch (err) {
+      console.error("status command failed:", err.stack || err.message);
+      await sock.sendMessage(jid, { text: "❌ Failed to post the status." }, { quoted: msg });
     }
-
-    lines.push("╰━━━━━━━━━━━━━━━━━");
-
-    await sock.sendMessage(jid, { text: lines.join("\n"), mentions: [sender] }, { quoted: msg });
   },
 };
