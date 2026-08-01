@@ -6,7 +6,7 @@ const CATEGORIES = {
   "🧭 GENERAL": ["help", "ping"],
   "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute"],
   "🎭 FUN": ["8ball", "answer", "coinflip", "dice", "rps", "ship", "trivia", "ttt"],
-  "🎞️ "🎞️ MEDIA": ["lyrics", "song", "status"],
+  "🎞️ MEDIA": ["lyrics", "song", "status"],
   "👑 OWNER": ["stop"],
 };
 
