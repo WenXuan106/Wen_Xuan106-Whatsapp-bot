@@ -29,4 +29,9 @@ module.exports = {
 
   // Model used by !gpt. gpt-4o-mini is a good cost/quality default.
   OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4o-mini",
+
+  // OpenWeatherMap API key, used by the !weather command. Get a free one at
+  // https://home.openweathermap.org/api_keys — without this set, !weather
+  // will tell users the bot isn't configured.
+  OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY || "",
 };
