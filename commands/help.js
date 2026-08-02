@@ -7,7 +7,7 @@ const CATEGORIES = {
   "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute", "warn", "warnings", "welcome"],
   "🎭 FUN": ["8ball", "answer", "coinflip", "dice", "hangman", "meme", "rps", "ship", "trivia", "ttt"],
   "🎞️ MEDIA": ["lyrics", "song", "status"],
-  "🌍 UTILITY": ["topmembers", "weather"],
+  "🌍 UTILITY": ["topmembers", "translate", "weather"],
   "👑 OWNER": ["stop"],
 };
 
