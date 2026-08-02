@@ -37,9 +37,35 @@ async function translateCasual(text, languageName) {
   return translated;
 }
 
-// Literal fallback APIs, used when OPENAI_API_KEY isn't set or the OpenAI
-// call fails for some other reason (rate limit, network issue, etc.).
-const LITERAL_PROVIDERS = [
+/**
+ * DeepL — noticeably higher translation quality than Google Translate's
+ * free endpoint. Requires a free DeepL API key (500k chars/month, no card
+ * needed) set as DEEPL_API_KEY. Returns null if not configured or if this
+ * language isn't in DeepL's supported set (language.deepl is undefined).
+ */
+async function translateDeepL(text, language) {
+  if (!config.DEEPL_API_KEY || !language.deepl) return null;
+
+  const { data } = await axios.post(
+    "https://api-free.deepl.com/v2/translate",
+    { text: [text], target_lang: language.deepl },
+    {
+      headers: {
+        Authorization: `DeepL-Auth-Key ${config.DEEPL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 15000,
+    }
+  );
+
+  const translated = data?.translations?.[0]?.text;
+  if (!translated) throw new Error("no translation in response");
+  return translated;
+}
+
+// Last-resort literal fallbacks, used only if OpenAI and DeepL are both
+// unavailable/unconfigured or fail.
+const LAST_RESORT_PROVIDERS = [
   async (text, code) => {
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${code}&dt=t&q=${encodeURIComponent(text)}`;
     const res = await fetch(url);
@@ -60,45 +86,48 @@ const LITERAL_PROVIDERS = [
   },
 ];
 
-// Full language name (lowercase) -> { name (proper case for the AI prompt), code (ISO, for the literal fallback) }.
-// Multi-word names (e.g. "chinese simplified") are matched by trying the
-// longest phrase first so they aren't broken up by the single-word entries.
+// Full language name (lowercase) -> { name: proper case for the AI prompt,
+// code: ISO code for the Google/MyMemory fallback, deepl: DeepL's own
+// target-language code (omitted where DeepL doesn't support the language,
+// so that provider is skipped for it). Multi-word names (e.g. "chinese
+// simplified") are matched by trying the longest phrase first so they
+// aren't broken up by the single-word entries.
 const LANGUAGES = {
-  "chinese simplified": { name: "Simplified Chinese", code: "zh-CN" },
+  "chinese simplified": { name: "Simplified Chinese", code: "zh-CN", deepl: "ZH" },
   "chinese traditional": { name: "Traditional Chinese", code: "zh-TW" },
-  "brazilian portuguese": { name: "Brazilian Portuguese", code: "pt" },
-  english: { name: "English", code: "en" },
-  french: { name: "French", code: "fr" },
-  spanish: { name: "Spanish", code: "es" },
-  german: { name: "German", code: "de" },
-  italian: { name: "Italian", code: "it" },
-  portuguese: { name: "Portuguese", code: "pt" },
-  russian: { name: "Russian", code: "ru" },
-  japanese: { name: "Japanese", code: "ja" },
-  korean: { name: "Korean", code: "ko" },
-  chinese: { name: "Chinese", code: "zh-CN" },
-  mandarin: { name: "Mandarin Chinese", code: "zh-CN" },
-  arabic: { name: "Arabic", code: "ar" },
+  "brazilian portuguese": { name: "Brazilian Portuguese", code: "pt", deepl: "PT-BR" },
+  english: { name: "English", code: "en", deepl: "EN-US" },
+  french: { name: "French", code: "fr", deepl: "FR" },
+  spanish: { name: "Spanish", code: "es", deepl: "ES" },
+  german: { name: "German", code: "de", deepl: "DE" },
+  italian: { name: "Italian", code: "it", deepl: "IT" },
+  portuguese: { name: "Portuguese", code: "pt", deepl: "PT-PT" },
+  russian: { name: "Russian", code: "ru", deepl: "RU" },
+  japanese: { name: "Japanese", code: "ja", deepl: "JA" },
+  korean: { name: "Korean", code: "ko", deepl: "KO" },
+  chinese: { name: "Chinese", code: "zh-CN", deepl: "ZH" },
+  mandarin: { name: "Mandarin Chinese", code: "zh-CN", deepl: "ZH" },
+  arabic: { name: "Arabic", code: "ar", deepl: "AR" },
   hindi: { name: "Hindi", code: "hi" },
-  dutch: { name: "Dutch", code: "nl" },
-  greek: { name: "Greek", code: "el" },
-  turkish: { name: "Turkish", code: "tr" },
+  dutch: { name: "Dutch", code: "nl", deepl: "NL" },
+  greek: { name: "Greek", code: "el", deepl: "EL" },
+  turkish: { name: "Turkish", code: "tr", deepl: "TR" },
   vietnamese: { name: "Vietnamese", code: "vi" },
   thai: { name: "Thai", code: "th" },
-  polish: { name: "Polish", code: "pl" },
-  swedish: { name: "Swedish", code: "sv" },
-  norwegian: { name: "Norwegian", code: "no" },
-  danish: { name: "Danish", code: "da" },
-  finnish: { name: "Finnish", code: "fi" },
-  indonesian: { name: "Indonesian", code: "id" },
+  polish: { name: "Polish", code: "pl", deepl: "PL" },
+  swedish: { name: "Swedish", code: "sv", deepl: "SV" },
+  norwegian: { name: "Norwegian", code: "no", deepl: "NB" },
+  danish: { name: "Danish", code: "da", deepl: "DA" },
+  finnish: { name: "Finnish", code: "fi", deepl: "FI" },
+  indonesian: { name: "Indonesian", code: "id", deepl: "ID" },
   malay: { name: "Malay", code: "ms" },
   filipino: { name: "Filipino", code: "tl" },
   tagalog: { name: "Tagalog", code: "tl" },
   hebrew: { name: "Hebrew", code: "he" },
-  ukrainian: { name: "Ukrainian", code: "uk" },
-  czech: { name: "Czech", code: "cs" },
-  romanian: { name: "Romanian", code: "ro" },
-  hungarian: { name: "Hungarian", code: "hu" },
+  ukrainian: { name: "Ukrainian", code: "uk", deepl: "UK" },
+  czech: { name: "Czech", code: "cs", deepl: "CS" },
+  romanian: { name: "Romanian", code: "ro", deepl: "RO" },
+  hungarian: { name: "Hungarian", code: "hu", deepl: "HU" },
   bengali: { name: "Bengali", code: "bn" },
   tamil: { name: "Tamil", code: "ta" },
   telugu: { name: "Telugu", code: "te" },
@@ -179,6 +208,7 @@ module.exports = {
       );
     }
 
+    // 1. OpenAI — casual, natural phrasing (if OPENAI_API_KEY is set).
     try {
       const translated = await translateCasual(text, language.name);
       if (translated) {
@@ -191,13 +221,27 @@ module.exports = {
       console.error("casual translate (OpenAI) failed:", detail);
     }
 
-    for (const translate of LITERAL_PROVIDERS) {
+    // 2. DeepL — much better literal-translation quality than Google (if DEEPL_API_KEY is set and this language is supported).
+    try {
+      const translated = await translateDeepL(text, language);
+      if (translated) {
+        return sock.sendMessage(jid, { text: translated }, { quoted: msg });
+      }
+    } catch (err) {
+      const detail = err.response
+        ? `HTTP ${err.response.status}: ${JSON.stringify(err.response.data?.message || err.response.data)}`
+        : err.message;
+      console.error("translate (DeepL) failed:", detail);
+    }
+
+    // 3. Last resort — Google Translate's free endpoint, then MyMemory.
+    for (const translate of LAST_RESORT_PROVIDERS) {
       try {
         const translated = await translate(text, language.code);
         return sock.sendMessage(jid, { text: translated }, { quoted: msg });
       } catch (err) {
-        console.error("literal translate provider failed:", err.message);
-        continue; // try the next provider
+        console.error("last-resort translate provider failed:", err.message);
+        continue;
       }
     }
 
