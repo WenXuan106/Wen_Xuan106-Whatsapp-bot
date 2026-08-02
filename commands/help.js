@@ -5,7 +5,7 @@ const config = require("../config");
 const CATEGORIES = {
   "🧭 GENERAL": ["help", "ping"],
   "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute", "warn", "warnings"],
-  "🎭 FUN": ["8ball", "answer", "coinflip", "dice", "rps", "ship", "trivia", "ttt"],
+  "🎭 FUN": ["8ball", "answer", "birthday", "coinflip", "dice", "rps", "ship", "trivia", "ttt"],
   "🎞️ MEDIA": ["lyrics", "song", "status"],
   "🌍 UTILITY": ["weather"],
   "👑 OWNER": ["stop"],
