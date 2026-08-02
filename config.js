@@ -35,10 +35,3 @@ module.exports = {
   // will tell users the bot isn't configured.
   OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY || "",
 };
-
-    // DeepL API key, used by the !translate command as a higher-quality
-  // fallback (better than Google Translate's free endpoint). Free tier is
-  // 500,000 chars/month, no card required — sign up at
-  // https://www.deepl.com/pro-api. Use your "DeepL API Free" key here.
-  DEEPL_API_KEY: process.env.DEEPL_API_KEY || "",
-};
