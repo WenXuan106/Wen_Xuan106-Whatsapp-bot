@@ -1,4 +1,3 @@
-// commands/
 // Digits-only, country code included, no "+" or spaces — WhatsApp JID format.
 const BIRTHDAY_JID = "6588597926@s.whatsapp.net";
 
