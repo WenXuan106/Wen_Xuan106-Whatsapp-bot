@@ -106,6 +106,10 @@ source.onmessage = (event) => render(JSON.parse(event.data));
 // Initial state in case the stream is slow to open
 fetch("/api/status")
   .then((r) => r.json())
+  .then(render);
+// Initial state in case the stream is slow to open
+fetch("/api/status")
+  .then((r) => r.json())
   .then(render);  .then(render);const phoneInput = document.getElementById("phone");
 const submitBtn = document.getElementById("submit");
 const useQrBtn = document.getElementById("use-qr");
