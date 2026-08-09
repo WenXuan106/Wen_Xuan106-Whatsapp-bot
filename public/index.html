@@ -68,6 +68,12 @@
     </div>
   </main>
 
+  <script>
+    // TEMPORARY debug helper — remove once the button issue is found.
+    window.onerror = (message, source, lineno, colno) => {
+      alert(`JS ERROR: ${message}\nat ${source}:${lineno}:${colno}`);
+    };
+  </script>
   <script src="app.js"></script>
 </body>
 </html>
