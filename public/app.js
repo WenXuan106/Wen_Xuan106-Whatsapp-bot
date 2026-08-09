@@ -53,11 +53,11 @@ function render(state) {
 }
 
 submitBtn.addEventListener("click", async () => {
-  const phoneNumber = phoneInput.value.trim();
+  const phoneNumber = phoneInput.value.trim().replace(/[^0-9]/g, "");
   entryError.hidden = true;
 
   if (!/^\d{7,15}$/.test(phoneNumber)) {
-    entryError.textContent = "Enter digits only, with country code (e.g. 15551234567).";
+    entryError.textContent = "Enter a valid number with country code, e.g. +65 12345678.";
     entryError.hidden = false;
     return;
   }
@@ -103,6 +103,10 @@ useQrBtn.addEventListener("click", async () => {
 const source = new EventSource("/api/stream");
 source.onmessage = (event) => render(JSON.parse(event.data));
 
+// Initial state in case the stream is slow to open
+fetch("/api/status")
+  .then((r) => r.json())
+  .then(render);
 // Initial state in case the stream is slow to open
 fetch("/api/status")
   .then((r) => r.json())
