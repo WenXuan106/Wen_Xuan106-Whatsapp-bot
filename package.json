@@ -1,6 +1,6 @@
 {
   "name": "Wen_Xuan106's-WhatsApp-Bot",
-  "version": "1.0.1.4",
+  "version": "1.0.1.7",
   "description": "Personal WhatsApp bot with a pairing-code website, built on Baileys.",
   "main": "index.js",
   "type": "commonjs",
@@ -15,6 +15,7 @@
     "@whiskeysockets/baileys": "^6.7.22",
     "axios": "^1.7.7",
     "express": "^4.19.2",
+    "geo-tz": "^8.1.1",
     "google-tts-api": "^2.0.2",
     "node-webpmux": "^3.1.7",
     "pino": "^9.3.2",
