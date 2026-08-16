@@ -1,5 +1,7 @@
 const config = require("../config");
 const { find: findTimeZone } = require("geo-tz");
+const { Resvg } = require("@resvg/resvg-js");
+const { buildWeatherCardSvg } = require("../lib/weathercard");
 
 // Julian-date-based lunar phase calculation (public-domain formula,
 // accurate to within a few hours) — verified against confirmed real
@@ -67,6 +69,10 @@ function dayLabel(date, index, timeZone) {
   return date.toLocaleDateString("en-US", { weekday: "short", timeZone });
 }
 
+function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+}
+
 module.exports = {
   name: "weather",
   description: "Get a detailed weather report + 3-day outlook for a city, e.g. !weather Tokyo",
@@ -122,11 +128,13 @@ module.exports = {
           for (const entry of forecast.list || []) {
             const date = new Date(entry.dt * 1000);
             const key = date.toLocaleDateString("en-CA", { timeZone }); // YYYY-MM-DD, sortable
-            if (!days.has(key)) days.set(key, { date, temps: [], pops: [], descriptions: {} });
+            if (!days.has(key)) days.set(key, { date, temps: [], pops: [], mains: {}, descriptions: {} });
             const day = days.get(key);
             day.temps.push(entry.main.temp);
             day.pops.push(entry.pop ?? 0);
-            const desc = entry.weather?.[0]?.main || "Clear";
+            const main = entry.weather?.[0]?.main || "Clear";
+            const desc = entry.weather?.[0]?.description || main.toLowerCase();
+            day.mains[main] = (day.mains[main] || 0) + 1;
             day.descriptions[desc] = (day.descriptions[desc] || 0) + 1;
           }
 
@@ -135,10 +143,13 @@ module.exports = {
             .filter(([key]) => key >= todayKey)
             .slice(0, 3)
             .map(([, day], index) => {
-              const dominant = Object.entries(day.descriptions).sort((a, b) => b[1] - a[1])[0][0];
+              const dominantMain = Object.entries(day.mains).sort((a, b) => b[1] - a[1])[0][0];
+              const dominantDesc = Object.entries(day.descriptions).sort((a, b) => b[1] - a[1])[0][0];
               return {
                 label: dayLabel(day.date, index, timeZone),
-                emoji: weatherEmoji(dominant),
+                condition: dominantMain,
+                description: capitalize(dominantDesc),
+                emoji: weatherEmoji(dominantMain),
                 min: Math.round(Math.min(...day.temps)),
                 max: Math.round(Math.max(...day.temps)),
                 pop: Math.round(Math.max(...day.pops) * 100),
@@ -155,6 +166,32 @@ module.exports = {
       const description = current.weather?.[0]?.description || "unknown conditions";
       const windKmh =
         current.wind?.speed != null ? Math.round(current.wind.speed * 3.6 * 10) / 10 : null;
+      const sunriseStr = current.sys?.sunrise ? formatTime(current.sys.sunrise, timeZone) : "Unknown";
+      const sunsetStr = current.sys?.sunset ? formatTime(current.sys.sunset, timeZone) : "Unknown";
+
+      // Card image — best-effort. If rendering fails for any reason, still
+      // send the text report below rather than losing the whole command.
+      try {
+        const svg = buildWeatherCardSvg({
+          botName: config.BOT_NAME,
+          location: `${current.name}${current.sys?.country ? `, ${current.sys.country}` : ""}`,
+          tempC: current.main.temp,
+          condition: mainCondition,
+          description: capitalize(description),
+          humidity: current.main.humidity,
+          windKmh: windKmh ?? 0,
+          pressure: current.main.pressure,
+          sunrise: sunriseStr,
+          sunset: sunsetStr,
+          moonPhaseName: moon.name,
+          outlookDays,
+        });
+        const resvg = new Resvg(svg, { font: { loadSystemFonts: true } });
+        const png = resvg.render().asPng();
+        await sock.sendMessage(jid, { image: png }, { quoted: msg });
+      } catch (err) {
+        console.error("weather: card image render failed, continuing with text only:", err.message);
+      }
 
       const lines = [
         `${emoji} *${config.BOT_NAME} Weather Report*`,
@@ -162,26 +199,32 @@ module.exports = {
         "",
         `📍 *Location:* ${current.name}${current.sys?.country ? `, ${current.sys.country}` : ""}`,
         timeZone ? `🌐 *Time Zone:* ${timeZone}` : null,
-        `${emoji} *Conditions:* ${description.charAt(0).toUpperCase()}${description.slice(1)}`,
+        `${emoji} *Conditions:* ${capitalize(description)}`,
         `🌡️ *Temperature:* ${current.main.temp}°C (feels like ${current.main.feels_like}°C)`,
         `💧 *Humidity:* ${current.main.humidity}%`,
         windKmh != null ? `💨 *Wind:* ${windKmh} km/h` : null,
         current.main.pressure ? `🧭 *Pressure:* ${current.main.pressure} hPa` : null,
-        current.sys?.sunrise ? `🌅 *Sunrise:* ${formatTime(current.sys.sunrise, timeZone)}` : null,
-        current.sys?.sunset ? `🌇 *Sunset:* ${formatTime(current.sys.sunset, timeZone)}` : null,
+        `🌅 *Sunrise:* ${sunriseStr}`,
+        `🌇 *Sunset:* ${sunsetStr}`,
         `${moon.emoji} *Lunar Phase:* ${moon.name}`,
       ].filter(Boolean);
 
       if (outlookDays.length) {
         lines.push("", "―――――――――――――――", "*3-Day Outlook*");
         for (const day of outlookDays) {
-          lines.push("", `📅 *${day.label}*`, `${day.emoji} ${day.min}°C – ${day.max}°C`, `☔ Rain chance: ${day.pop}%`);
+          lines.push(
+            "",
+            `📅 *${day.label}*`,
+            `${day.emoji} ${day.min}°C – ${day.max}°C`,
+            `${day.description}`,
+            `☔ Rain chance: ${day.pop}%`
+          );
         }
       }
 
       lines.push("", "―――――――――――――――", `🛰️ Powered by ${config.BOT_NAME}`);
 
-      await sock.sendMessage(jid, { text: lines.join("\n") }, { quoted: msg });
+      await sock.sendMessage(jid, { text: lines.join("\n") });
     } catch (err) {
       console.error("Error fetching weather:", err);
       await sock.sendMessage(
