@@ -34,7 +34,7 @@ module.exports = {
       divider,
       "",
       `📢 *Stay updated:*`,
-      `https://www.youtube.com/@Wen_Xuan106`,
+      `https://whatsapp.com/channel/0029VbBbyJO2v1IxySsZL72i`,
       "",
       divider,
       "",
