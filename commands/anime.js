@@ -89,6 +89,9 @@ async function sendReaction(sock, jid, msg, type) {
 // --- Anime / character search --------------------------------------------
 // Jikan is a free, unofficial MyAnimeList API — no key required.
 // Rate limit: ~3 req/sec, 60/min. https://docs.api.jikan.moe/
+// Note: Jikan is a shared public service and occasionally returns 504/429
+// errors when it's under load or MyAnimeList itself is slow — that's on
+// their end, not something fixable here beyond surfacing a clear error.
 const JIKAN_BASE = "https://api.jikan.moe/v4";
 
 function truncate(text, max) {
@@ -111,26 +114,6 @@ async function searchCharacter(query) {
     timeout: 15000,
   });
   return res.data?.data?.[0] || null;
-}
-
-// Looks up an actual GIF of the character by name via Giphy. Returns a
-// Buffer of the gif's bytes, or null if no key is configured / nothing
-// found / the request fails — callers should degrade gracefully.
-async function fetchCharacterGif(name) {
-  if (!config.GIPHY_API_KEY) return null;
-  try {
-    const res = await axios.get("https://api.giphy.com/v1/gifs/search", {
-      params: { api_key: config.GIPHY_API_KEY, q: `${name} anime`, limit: 1, rating: "pg-13" },
-      timeout: 15000,
-    });
-    const gifUrl = res.data?.data?.[0]?.images?.original?.url;
-    if (!gifUrl) return null;
-    const resp = await axios.get(gifUrl, { responseType: "arraybuffer", timeout: 15000 });
-    return Buffer.from(resp.data);
-  } catch (err) {
-    console.error("Giphy character gif lookup failed:", err.message);
-    return null;
-  }
 }
 
 function formatAnime(anime) {
@@ -161,7 +144,18 @@ function formatCharacter(character) {
 }
 
 async function handleAnimeSearch(sock, jid, msg, query) {
-  const anime = await searchAnime(query);
+  let anime;
+  try {
+    anime = await searchAnime(query);
+  } catch (err) {
+    console.error("anime search failed:", err.message);
+    const isTimeoutOrGateway = err.response?.status === 504 || err.code === "ECONNABORTED";
+    const text = isTimeoutOrGateway
+      ? "❌ The anime database is slow/unreachable right now (their end, not ours) — try again in a bit."
+      : "❌ Something went wrong with that search.";
+    return sock.sendMessage(jid, { text }, { quoted: msg });
+  }
+
   if (!anime) {
     return sock.sendMessage(jid, { text: `❌ No anime found for "${query}".` }, { quoted: msg });
   }
@@ -175,35 +169,34 @@ async function handleAnimeSearch(sock, jid, msg, query) {
 }
 
 async function handleCharacterSearch(sock, jid, msg, query) {
-  const character = await searchCharacter(query);
+  let character;
+  try {
+    character = await searchCharacter(query);
+  } catch (err) {
+    console.error("character search failed:", err.message);
+    const isTimeoutOrGateway = err.response?.status === 504 || err.code === "ECONNABORTED";
+    const text = isTimeoutOrGateway
+      ? "❌ The anime database is slow/unreachable right now (their end, not ours) — try again in a bit."
+      : "❌ Something went wrong with that search.";
+    return sock.sendMessage(jid, { text }, { quoted: msg });
+  }
+
   if (!character) {
     return sock.sendMessage(jid, { text: `❌ No character found for "${query}".` }, { quoted: msg });
   }
   const caption = formatCharacter(character);
-
-  // Send the info card first (with the static portrait, if any)...
   const image = character.images?.jpg?.image_url;
   if (image) {
     await sock.sendMessage(jid, { image: { url: image }, caption }, { quoted: msg });
   } else {
     await sock.sendMessage(jid, { text: caption }, { quoted: msg });
   }
-
-  // ...then a gif of the character, if we could find one.
-  const gifBuffer = await fetchCharacterGif(character.name);
-  if (gifBuffer) {
-    await sock.sendMessage(jid, { video: gifBuffer, gifPlayback: true }, { quoted: msg });
-  } else if (!config.GIPHY_API_KEY) {
-    await sock.sendMessage(jid, {
-      text: "ℹ️ Set GIPHY_API_KEY in your bot's config/env to also get a gif of characters (free at developers.giphy.com).",
-    });
-  }
 }
 
 module.exports = {
   name: "anime",
   description:
-    `Search an anime by name, search a character with '!anime character <name>' (includes a gif), ` +
+    `Search an anime by name, search a character with '!anime character <name>', ` +
     `or react with '!anime <type>' — types: ${REACTION_TYPES.join(", ")}.`,
   async execute({ sock, jid, msg, args }) {
     if (!args.length) {
@@ -213,7 +206,7 @@ module.exports = {
           text: [
             "Usage:",
             "!anime <name> — search an anime",
-            "!anime character <name> — search a character (+ gif)",
+            "!anime character <name> — search a character",
             `!anime <type> — reaction gif/sticker: ${REACTION_TYPES.join(", ")}`,
           ].join("\n"),
         },
