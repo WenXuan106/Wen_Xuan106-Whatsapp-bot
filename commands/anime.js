@@ -8,7 +8,7 @@ const config = require("../config");
 
 // --- Reaction gifs/stickers (!anime hug, !anime pat, etc.) --------------
 
-const ANIMU_BASE = "https://api.some-random-api.com/animu";
+const ANIMU_BASE = "https://some-random-api.com/animu";
 const REACTION_TYPES = ["nom", "poke", "cry", "kiss", "pat", "hug", "wink", "face-palm", "quote"];
 
 function normalizeReactionType(input) {
@@ -51,7 +51,16 @@ function convertToSticker(mediaBuffer, isAnimated) {
 }
 
 async function sendReaction(sock, jid, msg, type) {
-  const res = await axios.get(`${ANIMU_BASE}/${type}`, { timeout: 15000 });
+  const url = `${ANIMU_BASE}/${type}`;
+  let res;
+  try {
+    res = await axios.get(url, { timeout: 15000 });
+  } catch (err) {
+    // Name the exact URL + status in the log, so if this endpoint moves
+    // again, the next failure is diagnosable from the log alone.
+    console.error(`animu reaction fetch failed for ${url}:`, err.response?.status || err.message);
+    throw err;
+  }
   const data = res.data || {};
 
   if (data.link) {
