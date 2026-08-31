@@ -34,10 +34,10 @@ module.exports = {
   // https://home.openweathermap.org/api_keys — without this set, !weather
   // will tell users the bot isn't configured.
   OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY || "",
-};
 
 // Spotify PAI key, used by !weather command. Get free one at 
 // developer.spotify.com/dashboard - without this set, !spotify
 // will tell users the bot isn't configured.
 SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID || "",
 SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || "",
+};
