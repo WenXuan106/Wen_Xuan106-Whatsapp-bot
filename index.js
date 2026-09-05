@@ -1,9 +1,5 @@
 require("dotenv").config();
 
-
-const { startTelegramBot } = require("./lib/telegram");
-startTelegramBot();
-
 // Some of Baileys' own dependencies (undici, specifically) reference the
 // global `File` class that Node only exposes automatically from v20
 // onward. On older Node (e.g. Railway's default v18 builder) requiring
@@ -120,4 +116,9 @@ app.get("/api/stream", (req, res) => {
 
 app.listen(config.PORT, () => {
   console.log(`Pairing website running at http://localhost:${config.PORT}`);
+});
+
+//wherever the WhatsApp bot currently starts up, add alongside it
+const { startTelegramBot } = require("./lib/telegram");
+startTelegramBot();
 });
