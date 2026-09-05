@@ -40,4 +40,7 @@ module.exports = {
 // will tell users the bot isn't configured.
 SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID || "",
 SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || "",
+
+//Telegram Bot Token
+TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
 };
