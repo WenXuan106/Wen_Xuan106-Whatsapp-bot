@@ -121,4 +121,3 @@ app.listen(config.PORT, () => {
 //wherever the WhatsApp bot currently starts up, add alongside it
 const { startTelegramBot } = require("./lib/telegram");
 startTelegramBot();
-});
