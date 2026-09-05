@@ -1,3 +1,11 @@
+// Node prefers IPv6 by default when a host advertises it. On hosts where
+// IPv6 routing is actually broken (common on some cloud platforms), that
+// preference makes outbound requests hang until timeout instead of
+// falling back to IPv4 — which is exactly what an ETIMEDOUT reaching a
+// definitely-working API like api.telegram.org usually means. Force
+// IPv4 first so that dead route is never tried.
+require("node:dns").setDefaultResultOrder("ipv4first");
+
 require("dotenv").config();
 
 // Some of Baileys' own dependencies (undici, specifically) reference the
