@@ -1,11 +1,3 @@
-// Node prefers IPv6 by default when a host advertises it. On hosts where
-// IPv6 routing is actually broken (common on some cloud platforms), that
-// preference makes outbound requests hang until timeout instead of
-// falling back to IPv4 — which is exactly what an ETIMEDOUT reaching a
-// definitely-working API like api.telegram.org usually means. Force
-// IPv4 first so that dead route is never tried.
-require("node:dns").setDefaultResultOrder("ipv4first");
-
 require("dotenv").config();
 
 // Some of Baileys' own dependencies (undici, specifically) reference the
@@ -40,6 +32,19 @@ if (typeof globalThis.File === "undefined") {
 if (typeof globalThis.crypto === "undefined") {
   globalThis.crypto = require("node:crypto").webcrypto;
 }
+
+// Node prefers IPv6 by default when a host advertises it. On hosts where
+// IPv6 routing is actually broken (common on some cloud platforms), that
+// preference makes outbound requests hang until timeout instead of
+// falling back to IPv4 — which is exactly what an ETIMEDOUT reaching a
+// definitely-working API like api.telegram.org usually means. Force
+// IPv4 first so that dead route is never tried.
+require("node:dns").setDefaultResultOrder("ipv4first");
+
+// TEMPORARY diagnostic — remove once we know the answer.
+fetch("https://api.github.com")
+  .then((r) => console.log("DIAGNOSTIC: reached api.github.com, status", r.status))
+  .catch((err) => console.error("DIAGNOSTIC: could NOT reach api.github.com:", err.message));
 
 const express = require("express");
 const path = require("path");
@@ -126,6 +131,5 @@ app.listen(config.PORT, () => {
   console.log(`Pairing website running at http://localhost:${config.PORT}`);
 });
 
-//wherever the WhatsApp bot currently starts up, add alongside it
 const { startTelegramBot } = require("./lib/telegram");
 startTelegramBot();
