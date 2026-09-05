@@ -10,11 +10,10 @@ function performanceRating(ms) {
 module.exports = {
   name: "ping",
   description: "Check that the bot is alive and see response time",
-  async execute({ sock, msg, jid }) {
-    // Real latency: time between WhatsApp delivering the message and the
-    // bot getting around to replying — not just how long this function
-    // took to run (which would always read ~0ms and be meaningless).
-    const sentAt = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+  async execute(ctx) {
+    // Real latency: time between the platform delivering the message and
+    // the bot getting around to replying.
+    const sentAt = ctx.messageTimestampMs ?? Date.now();
     const ms = Math.max(0, Date.now() - sentAt);
     const perf = performanceRating(ms);
     const divider = "―――――――――――――――";
@@ -41,6 +40,6 @@ module.exports = {
       `🚀 Systems operational.`,
     ];
 
-    await sock.sendMessage(jid, { text: lines.join("\n") }, { quoted: msg });
+    await ctx.sendText(lines.join("\n"));
   },
 };
