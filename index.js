@@ -1,5 +1,9 @@
 require("dotenv").config();
 
+
+const { startTelegramBot } = require("./lib/telegram");
+startTelegramBot();
+
 // Some of Baileys' own dependencies (undici, specifically) reference the
 // global `File` class that Node only exposes automatically from v20
 // onward. On older Node (e.g. Railway's default v18 builder) requiring
