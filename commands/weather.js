@@ -20,10 +20,10 @@ function moonPhase(date = new Date()) {
   const c = 365.25 * year;
   const e = 30.6 * month;
   let jd = c + e + day - 694039.09;
-  jd /= 29.5305882; // divide by the moon cycle length
+  jd /= 29.5305882;
   let b = Math.trunc(jd);
-  jd -= b; // fractional part of the cycle
-  b = Math.round(jd * 8) % 8; // scale to 0-7, 8 wraps back to 0 (New Moon)
+  jd -= b;
+  b = Math.round(jd * 8) % 8;
 
   const phases = [
     { name: "New Moon", emoji: "🌑" },
@@ -69,25 +69,17 @@ function dayLabel(date, index, timeZone) {
   return date.toLocaleDateString("en-US", { weekday: "short", timeZone });
 }
 
-function capitalize(str) {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
-}
-
 module.exports = {
   name: "weather",
   description: "Get a detailed weather report + 3-day outlook for a city, e.g. !weather Tokyo",
-  async execute({ sock, msg, jid, args }) {
-    const city = args.join(" ").trim();
+  async execute(ctx) {
+    const city = ctx.args.join(" ").trim();
     if (!city) {
-      return sock.sendMessage(jid, { text: "Usage: !weather <city>" }, { quoted: msg });
+      return ctx.sendText("Usage: !weather <city>");
     }
 
     if (!config.OPENWEATHER_API_KEY) {
-      return sock.sendMessage(
-        jid,
-        { text: "❌ Weather isn't configured — ask the bot owner to set OPENWEATHER_API_KEY." },
-        { quoted: msg }
-      );
+      return ctx.sendText("❌ Weather isn't configured — ask the bot owner to set OPENWEATHER_API_KEY.");
     }
 
     try {
@@ -102,7 +94,7 @@ module.exports = {
           currentRes.status === 404
             ? `❌ Couldn't find a city called "${city}".`
             : `❌ Weather lookup failed: ${current.message || currentRes.status}`;
-        return sock.sendMessage(jid, { text }, { quoted: msg });
+        return ctx.sendText(text);
       }
 
       const { lat, lon } = current.coord || {};
@@ -110,12 +102,9 @@ module.exports = {
       try {
         timeZone = lat != null && lon != null ? findTimeZone(lat, lon)[0] : undefined;
       } catch (_) {
-        timeZone = undefined; // fall back to UTC formatting below rather than fail the whole command
+        timeZone = undefined;
       }
 
-      // Same free-tier API key covers the 5-day/3-hour forecast endpoint —
-      // used here just for a 3-day outlook. If it fails, still show the
-      // current conditions rather than failing the whole command.
       let outlookDays = [];
       try {
         const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
@@ -127,7 +116,7 @@ module.exports = {
           const days = new Map();
           for (const entry of forecast.list || []) {
             const date = new Date(entry.dt * 1000);
-            const key = date.toLocaleDateString("en-CA", { timeZone }); // YYYY-MM-DD, sortable
+            const key = date.toLocaleDateString("en-CA", { timeZone });
             if (!days.has(key)) days.set(key, { date, temps: [], pops: [], mains: {}, descriptions: {} });
             const day = days.get(key);
             day.temps.push(entry.main.temp);
@@ -148,7 +137,7 @@ module.exports = {
               return {
                 label: dayLabel(day.date, index, timeZone),
                 condition: dominantMain,
-                description: capitalize(dominantDesc),
+                description: dominantDesc.charAt(0).toUpperCase() + dominantDesc.slice(1),
                 emoji: weatherEmoji(dominantMain),
                 min: Math.round(Math.min(...day.temps)),
                 max: Math.round(Math.max(...day.temps)),
@@ -164,20 +153,19 @@ module.exports = {
       const mainCondition = current.weather?.[0]?.main;
       const emoji = weatherEmoji(mainCondition);
       const description = current.weather?.[0]?.description || "unknown conditions";
+      const capitalizedDescription = description.charAt(0).toUpperCase() + description.slice(1);
       const windKmh =
         current.wind?.speed != null ? Math.round(current.wind.speed * 3.6 * 10) / 10 : null;
       const sunriseStr = current.sys?.sunrise ? formatTime(current.sys.sunrise, timeZone) : "Unknown";
       const sunsetStr = current.sys?.sunset ? formatTime(current.sys.sunset, timeZone) : "Unknown";
 
-      // Card image — best-effort. If rendering fails for any reason, still
-      // send the text report below rather than losing the whole command.
       try {
         const svg = buildWeatherCardSvg({
           botName: config.BOT_NAME,
           location: `${current.name}${current.sys?.country ? `, ${current.sys.country}` : ""}`,
           tempC: current.main.temp,
           condition: mainCondition,
-          description: capitalize(description),
+          description: capitalizedDescription,
           humidity: current.main.humidity,
           windKmh: windKmh ?? 0,
           pressure: current.main.pressure,
@@ -188,7 +176,7 @@ module.exports = {
         });
         const resvg = new Resvg(svg, { font: { loadSystemFonts: true } });
         const png = resvg.render().asPng();
-        await sock.sendMessage(jid, { image: png }, { quoted: msg });
+        await ctx.sendImage(png);
       } catch (err) {
         console.error("weather: card image render failed, continuing with text only:", err.message);
       }
@@ -199,7 +187,7 @@ module.exports = {
         "",
         `📍 *Location:* ${current.name}${current.sys?.country ? `, ${current.sys.country}` : ""}`,
         timeZone ? `🌐 *Time Zone:* ${timeZone}` : null,
-        `${emoji} *Conditions:* ${capitalize(description)}`,
+        `${emoji} *Conditions:* ${capitalizedDescription}`,
         `🌡️ *Temperature:* ${current.main.temp}°C (feels like ${current.main.feels_like}°C)`,
         `💧 *Humidity:* ${current.main.humidity}%`,
         windKmh != null ? `💨 *Wind:* ${windKmh} km/h` : null,
@@ -224,14 +212,10 @@ module.exports = {
 
       lines.push("", "―――――――――――――――", `🛰️ Powered by ${config.BOT_NAME}`);
 
-      await sock.sendMessage(jid, { text: lines.join("\n") });
+      await ctx.sendText(lines.join("\n"));
     } catch (err) {
       console.error("Error fetching weather:", err);
-      await sock.sendMessage(
-        jid,
-        { text: "❌ Sorry, I couldn't fetch the weather right now." },
-        { quoted: msg }
-      );
+      await ctx.sendText("❌ Sorry, I couldn't fetch the weather right now.");
     }
   },
 };
