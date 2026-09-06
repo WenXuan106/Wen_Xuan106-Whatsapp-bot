@@ -52,14 +52,12 @@ function convertToSticker(mediaBuffer, isAnimated) {
   });
 }
 
-async function sendReaction(sock, jid, msg, type) {
+async function sendReaction(ctx, type) {
   const url = `${ANIMU_BASE}/${type}`;
   let res;
   try {
     res = await axios.get(url, { timeout: 15000 });
   } catch (err) {
-    // Name the exact URL + status in the log, so if this endpoint moves
-    // again, the next failure is diagnosable from the log alone.
     console.error(`animu reaction fetch failed for ${url}:`, err.response?.status || err.message);
     throw err;
   }
@@ -78,30 +76,24 @@ async function sendReaction(sock, jid, msg, type) {
           headers: { "User-Agent": "Mozilla/5.0" },
         });
         const stickerBuffer = await convertToSticker(Buffer.from(resp.data), isGif);
-        await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
+        await ctx.sendSticker(stickerBuffer);
         return;
       } catch (err) {
         console.error("Sticker conversion failed, sending as image instead:", err.message);
       }
     }
 
-    await sock.sendMessage(jid, { image: { url: data.url }, caption: `anime: ${type}` }, { quoted: msg });
+    await ctx.sendImage(data.url, `anime: ${type}`);
     return;
   }
 
-  await sock.sendMessage(jid, { text: "❌ Failed to fetch that." }, { quoted: msg });
+  await ctx.sendText("❌ Failed to fetch that.");
 }
 
 // --- Anime / character search --------------------------------------------
 // Primary: Jikan, a free unofficial MyAnimeList API — no key required.
-// https://docs.api.jikan.moe/ — being a scraper of another site (not a
-// first-party API), it occasionally returns 504/429 errors when it's
-// under load or MyAnimeList itself is slow.
-//
-// Fallback: AniList's public GraphQL API — also keyless, and since it's
-// a first-party database (not scraping anything), it's generally far
-// more reliable. Used automatically whenever Jikan errors out or comes
-// back with no match, so a Jikan outage doesn't take the command down.
+// Fallback: AniList's public GraphQL API — also keyless and generally
+// more reliable since it's a first-party database, not a scraper.
 const JIKAN_BASE = "https://api.jikan.moe/v4";
 const ANILIST_BASE = "https://graphql.anilist.co";
 
@@ -116,12 +108,11 @@ function cleanAniListText(text) {
   return text
     .replace(/<br\s*\/?>/gi, " ")
     .replace(/<i>|<\/i>|<b>|<\/b>/gi, "")
-    .replace(/~!|!~/g, "") // AniList spoiler markers
+    .replace(/~!|!~/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-// --- Jikan fetchers ---
 async function searchAnimeJikan(query) {
   const res = await axios.get(`${JIKAN_BASE}/anime`, {
     params: { q: query, limit: 1, sfw: true },
@@ -138,7 +129,6 @@ async function searchCharacterJikan(query) {
   return res.data?.data?.[0] || null;
 }
 
-// --- AniList fetchers ---
 async function searchAnimeAniList(query) {
   const gql = `query ($search: String) {
     Media(search: $search, type: ANIME) {
@@ -176,7 +166,6 @@ async function searchCharacterAniList(query) {
   return res.data?.data?.Character || null;
 }
 
-// --- Normalize both sources to a common shape ---
 function normalizeAnimeFromJikan(anime) {
   return {
     title: anime.title_english || anime.title,
@@ -231,7 +220,6 @@ function normalizeCharacterFromAniList(char) {
   };
 }
 
-// --- Fetch with fallback: Jikan first, AniList if Jikan errors or misses ---
 async function fetchAnimeWithFallback(query) {
   try {
     const anime = await searchAnimeJikan(query);
@@ -292,37 +280,29 @@ function formatCharacter(character) {
   ].join("\n");
 }
 
-async function handleAnimeSearch(sock, jid, msg, query) {
+async function handleAnimeSearch(ctx, query) {
   const anime = await fetchAnimeWithFallback(query);
   if (!anime) {
-    return sock.sendMessage(
-      jid,
-      { text: `❌ No anime found for "${query}" (checked MyAnimeList and AniList).` },
-      { quoted: msg }
-    );
+    return ctx.sendText(`❌ No anime found for "${query}" (checked MyAnimeList and AniList).`);
   }
   const caption = formatAnime(anime);
   if (anime.image) {
-    await sock.sendMessage(jid, { image: { url: anime.image }, caption }, { quoted: msg });
+    await ctx.sendImage(anime.image, caption);
   } else {
-    await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    await ctx.sendText(caption);
   }
 }
 
-async function handleCharacterSearch(sock, jid, msg, query) {
+async function handleCharacterSearch(ctx, query) {
   const character = await fetchCharacterWithFallback(query);
   if (!character) {
-    return sock.sendMessage(
-      jid,
-      { text: `❌ No character found for "${query}" (checked MyAnimeList and AniList).` },
-      { quoted: msg }
-    );
+    return ctx.sendText(`❌ No character found for "${query}" (checked MyAnimeList and AniList).`);
   }
   const caption = formatCharacter(character);
   if (character.image) {
-    await sock.sendMessage(jid, { image: { url: character.image }, caption }, { quoted: msg });
+    await ctx.sendImage(character.image, caption);
   } else {
-    await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+    await ctx.sendText(caption);
   }
 }
 
@@ -331,45 +311,40 @@ module.exports = {
   description:
     `Search an anime by name, search a character with '!anime character <name>', ` +
     `or react with '!anime <type>' — types: ${REACTION_TYPES.join(", ")}.`,
-  async execute({ sock, jid, msg, args }) {
-    if (!args.length) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: [
-            "Usage:",
-            "!anime <name> — search an anime",
-            "!anime character <name> — search a character",
-            `!anime <type> — reaction gif/sticker: ${REACTION_TYPES.join(", ")}`,
-          ].join("\n"),
-        },
-        { quoted: msg }
+  async execute(ctx) {
+    if (!ctx.args.length) {
+      return ctx.sendText(
+        [
+          "Usage:",
+          "!anime <name> — search an anime",
+          "!anime character <name> — search a character",
+          `!anime <type> — reaction gif/sticker: ${REACTION_TYPES.join(", ")}`,
+        ].join("\n")
       );
     }
 
-    const first = args[0].toLowerCase();
+    const first = ctx.args[0].toLowerCase();
 
     try {
       if (first === "character") {
-        const query = args.slice(1).join(" ").trim();
+        const query = ctx.args.slice(1).join(" ").trim();
         if (!query) {
-          return sock.sendMessage(jid, { text: "Usage: !anime character <name>" }, { quoted: msg });
+          return ctx.sendText("Usage: !anime character <name>");
         }
-        await handleCharacterSearch(sock, jid, msg, query);
+        await handleCharacterSearch(ctx, query);
         return;
       }
 
       const reactionType = normalizeReactionType(first);
       if (REACTION_TYPES.includes(reactionType)) {
-        await sendReaction(sock, jid, msg, reactionType);
+        await sendReaction(ctx, reactionType);
         return;
       }
 
-      // Anything else is treated as an anime title to search.
-      await handleAnimeSearch(sock, jid, msg, args.join(" ").trim());
+      await handleAnimeSearch(ctx, ctx.args.join(" ").trim());
     } catch (err) {
       console.error("anime command failed:", err.message);
-      await sock.sendMessage(jid, { text: "❌ Something went wrong with that." }, { quoted: msg });
+      await ctx.sendText("❌ Something went wrong with that.");
     }
   },
 };
