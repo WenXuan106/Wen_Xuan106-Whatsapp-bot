@@ -44,20 +44,14 @@ function formatDuration(ms) {
 module.exports = {
   name: "spotify",
   description: "Search Spotify for a song and get its info + link, e.g. !spotify con calma",
-  async execute({ sock, jid, msg, args }) {
-    const query = args.join(" ").trim();
+  async execute(ctx) {
+    const query = ctx.args.join(" ").trim();
     if (!query) {
-      return sock.sendMessage(jid, { text: "Usage: !spotify <song/artist>" }, { quoted: msg });
+      return ctx.sendText("Usage: !spotify <song/artist>");
     }
 
     if (!config.SPOTIFY_CLIENT_ID || !config.SPOTIFY_CLIENT_SECRET) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: "❌ Spotify isn't configured — ask the bot owner to set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET.",
-        },
-        { quoted: msg }
-      );
+      return ctx.sendText("❌ Spotify isn't configured — ask the bot owner to set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET.");
     }
 
     try {
@@ -70,7 +64,7 @@ module.exports = {
 
       const track = res.data?.tracks?.items?.[0];
       if (!track) {
-        return sock.sendMessage(jid, { text: `❌ No results found for "${query}".` }, { quoted: msg });
+        return ctx.sendText(`❌ No results found for "${query}".`);
       }
 
       const artists = track.artists.map((a) => a.name).join(", ");
@@ -86,13 +80,13 @@ module.exports = {
       ].join("\n");
 
       if (cover) {
-        await sock.sendMessage(jid, { image: { url: cover }, caption }, { quoted: msg });
+        await ctx.sendImage(cover, caption);
       } else {
-        await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+        await ctx.sendText(caption);
       }
     } catch (err) {
       console.error("spotify command failed:", err.response?.status || err.message);
-      await sock.sendMessage(jid, { text: "❌ Something went wrong with that search." }, { quoted: msg });
+      await ctx.sendText("❌ Something went wrong with that search.");
     }
   },
 };
