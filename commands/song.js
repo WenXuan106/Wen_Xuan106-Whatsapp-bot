@@ -20,10 +20,10 @@ function formatViews(views) {
 module.exports = {
   name: "song",
   description: "Search YouTube for a song and get its info + link, e.g. !song lemon tree",
-  async execute({ sock, jid, msg, args }) {
-    const query = args.join(" ").trim();
+  async execute(ctx) {
+    const query = ctx.args.join(" ").trim();
     if (!query) {
-      return sock.sendMessage(jid, { text: "Usage: !song <name>" }, { quoted: msg });
+      return ctx.sendText("Usage: !song <name>");
     }
 
     try {
@@ -31,7 +31,7 @@ module.exports = {
       const video = videos?.[0];
 
       if (!video) {
-        return sock.sendMessage(jid, { text: `❌ No results found for "${query}".` }, { quoted: msg });
+        return ctx.sendText(`❌ No results found for "${query}".`);
       }
 
       const caption = [
@@ -45,10 +45,10 @@ module.exports = {
         `▶️ ${video.url}`,
       ].join("\n");
 
-      await sock.sendMessage(jid, { image: { url: video.thumbnail }, caption }, { quoted: msg });
+      await ctx.sendImage(video.thumbnail, caption);
     } catch (err) {
       console.error("song command failed:", err.message);
-      await sock.sendMessage(jid, { text: "❌ Something went wrong with that search." }, { quoted: msg });
+      await ctx.sendText("❌ Something went wrong with that search.");
     }
   },
 };
