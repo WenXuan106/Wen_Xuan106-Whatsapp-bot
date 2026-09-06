@@ -21,9 +21,9 @@ const QUESTIONS = [
 module.exports = {
   name: "geography",
   description: "Start a geography question, then answer with !answer <your answer>",
-  async execute({ sock, jid, msg }) {
+  async execute(ctx) {
     const question = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
-    startQuestion(jid, question.a, "geography");
-    await sock.sendMessage(jid, { text: `🌍 ${question.q}\n\nReply with !answer <your answer>` }, { quoted: msg });
+    startQuestion(ctx.chatId, question.a, "geography");
+    await ctx.sendText(`🌍 ${question.q}\n\nReply with !answer <your answer>`);
   },
 };
