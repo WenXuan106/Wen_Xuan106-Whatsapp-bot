@@ -3,24 +3,22 @@ const { getActive, clearActive } = require("../lib/quiz");
 module.exports = {
   name: "answer",
   description: "Answer the current quiz question (trivia/geography/science), e.g. !answer tokyo",
-  async execute({ sock, jid, msg, args }) {
-    const guess = args.join(" ").trim().toLowerCase();
-    const question = getActive(jid);
+  async execute(ctx) {
+    const guess = ctx.args.join(" ").trim().toLowerCase();
+    const question = getActive(ctx.chatId);
 
     if (!question) {
-      return sock.sendMessage(jid, {
-        text: "No question active — start one with !trivia, !geography, or !science",
-      });
+      return ctx.sendText("No question active — start one with !trivia, !geography, or !science");
     }
     if (!guess) {
-      return sock.sendMessage(jid, { text: "Usage: !answer <your answer>" });
+      return ctx.sendText("Usage: !answer <your answer>");
     }
 
     if (question.answers.includes(guess)) {
-      clearActive(jid);
-      await sock.sendMessage(jid, { text: "✅ Correct!" }, { quoted: msg });
+      clearActive(ctx.chatId);
+      await ctx.sendText("✅ Correct!");
     } else {
-      await sock.sendMessage(jid, { text: "❌ Not quite, try again." }, { quoted: msg });
+      await ctx.sendText("❌ Not quite, try again.");
     }
   },
 };
