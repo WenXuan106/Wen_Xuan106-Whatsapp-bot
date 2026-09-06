@@ -75,59 +75,51 @@ function formatCharacter(character) {
 module.exports = {
   name: "vocaloid",
   description: "Search a Vocaloid song by name, or a character/voicebank with '!vocaloid character <name>'.",
-  async execute({ sock, jid, msg, args }) {
-    if (!args.length) {
-      return sock.sendMessage(
-        jid,
-        {
-          text: [
-            "Usage:",
-            "!vocaloid <song name> — search a Vocaloid song",
-            "!vocaloid character <name> — search a Vocaloid character/voicebank",
-          ].join("\n"),
-        },
-        { quoted: msg }
+  async execute(ctx) {
+    if (!ctx.args.length) {
+      return ctx.sendText(
+        [
+          "Usage:",
+          "!vocaloid <song name> — search a Vocaloid song",
+          "!vocaloid character <name> — search a Vocaloid character/voicebank",
+        ].join("\n")
       );
     }
 
-    const isCharacterSearch = args[0].toLowerCase() === "character";
-    const query = (isCharacterSearch ? args.slice(1) : args).join(" ").trim();
+    const isCharacterSearch = ctx.args[0].toLowerCase() === "character";
+    const query = (isCharacterSearch ? ctx.args.slice(1) : ctx.args).join(" ").trim();
 
     if (!query) {
-      return sock.sendMessage(
-        jid,
-        { text: isCharacterSearch ? "Usage: !vocaloid character <name>" : "Usage: !vocaloid <song name>" },
-        { quoted: msg }
-      );
+      return ctx.sendText(isCharacterSearch ? "Usage: !vocaloid character <name>" : "Usage: !vocaloid <song name>");
     }
 
     try {
       if (isCharacterSearch) {
         const character = await searchCharacter(query);
         if (!character) {
-          return sock.sendMessage(jid, { text: `❌ No Vocaloid character found for "${query}".` }, { quoted: msg });
+          return ctx.sendText(`❌ No Vocaloid character found for "${query}".`);
         }
         const { caption, thumb } = formatCharacter(character);
         if (thumb) {
-          await sock.sendMessage(jid, { image: { url: thumb }, caption }, { quoted: msg });
+          await ctx.sendImage(thumb, caption);
         } else {
-          await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+          await ctx.sendText(caption);
         }
       } else {
         const song = await searchSong(query);
         if (!song) {
-          return sock.sendMessage(jid, { text: `❌ No Vocaloid song found for "${query}".` }, { quoted: msg });
+          return ctx.sendText(`❌ No Vocaloid song found for "${query}".`);
         }
         const { caption, thumb } = formatSong(song);
         if (thumb) {
-          await sock.sendMessage(jid, { image: { url: thumb }, caption }, { quoted: msg });
+          await ctx.sendImage(thumb, caption);
         } else {
-          await sock.sendMessage(jid, { text: caption }, { quoted: msg });
+          await ctx.sendText(caption);
         }
       }
     } catch (err) {
       console.error("vocaloid command failed:", err.message);
-      await sock.sendMessage(jid, { text: "❌ Something went wrong with that search." }, { quoted: msg });
+      await ctx.sendText("❌ Something went wrong with that search.");
     }
   },
 };
