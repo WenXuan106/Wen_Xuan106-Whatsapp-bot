@@ -1,31 +1,19 @@
-const { getGame, startGame, stopGame, renderStatus } = require("../lib/hangman");
+const { startGame, stopGame } = require("../lib/hangman");
 
 module.exports = {
   name: "hangman",
-  description: "Play hangman, e.g. !hangman to start, then type single letters to guess. !hangman stop to end.",
-  async execute({ sock, jid, msg, args }) {
-    if (!jid.endsWith("@g.us")) {
-      return sock.sendMessage(jid, { text: "This command only works in groups." });
+  description: "Hangman — !hangman to start, type a letter to guess. !hangman stop to end.",
+  async execute(ctx) {
+    if ((ctx.args[0] || "").toLowerCase() === "stop") {
+      const stopped = stopGame(ctx.chatId);
+      return ctx.sendText(stopped ? "🛑 Hangman stopped." : "No game is currently running.");
     }
 
-    if ((args[0] || "").toLowerCase() === "stop") {
-      const stopped = stopGame(jid);
-      return sock.sendMessage(jid, {
-        text: stopped ? "🛑 Hangman game stopped." : "No game is currently running.",
-      });
-    }
-
-    const result = startGame(jid);
+    const result = startGame(ctx.chatId);
     if (result.error) {
-      return sock.sendMessage(jid, { text: result.error });
+      return ctx.sendText(result.error);
     }
 
-    await sock.sendMessage(
-      jid,
-      {
-        text: `${renderStatus(result.game)}\n\nType a single letter to guess. *!hangman stop* to end.`,
-      },
-      { quoted: msg }
-    );
+    await ctx.sendText(`🪢 *Hangman*\n${result.stage}\n${result.display}\n\nGuess a letter. *!hangman stop* to end.`);
   },
 };
