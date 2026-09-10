@@ -38,6 +38,9 @@ module.exports = {
       divider,
       "",
       `🚀 Systems operational.`,
+      divider,
+      "",
+     `Use !help to see all commands.`, 
     ];
 
     await ctx.sendText(lines.join("\n"));
