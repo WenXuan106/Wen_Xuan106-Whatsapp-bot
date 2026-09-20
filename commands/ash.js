@@ -31,9 +31,13 @@ const SENTENCES = [
   "*WHO YOU THINK YOU ARE!?*",
   "A friendly reminder to stay hydrated! Drink more water to keep yourself healthy. 💧",
   "SPAM SUMMORE",
-  "BUT THIS ISNT HARRY'S WORLD OK, BUT THIS ISNT HARRY'S WORLD OK",
+  "HATS TO BREAK IT TO YALL, BUT THIS ISNT HARRY'S WORLD OK",
   "EH COME BRO",
   "📢 *YALL JUST NOW REACT WHY NOW NO REACT YALL SCARED RIGHT!?*",
+  "ILY",
+  "LET ME COOK",
+  "HEYYYY",
+  "YOU SCARED IT IS!?",
 ];
 
 module.exports = {
