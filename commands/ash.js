@@ -38,6 +38,12 @@ const SENTENCES = [
   "LET ME COOK",
   "HEYYYY",
   "YOU SCARED IT IS!?",
+  "ARGHHHHHHH I KEEP SPELLING HATE WRONG AHHHHHHHH",
+  "MAC AND CHEESE BANGBANG SAUCE",
+  "Chicken chop",
+  "Cai fan",
+  "Muffin",
+  "niu rou mian",
 ];
 
 module.exports = {
