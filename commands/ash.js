@@ -44,6 +44,14 @@ const SENTENCES = [
   "Cai fan",
   "Muffin",
   "niu rou mian",
+  "BARIS, SEDYIA",
+  "Stop making me feel like a 懒惰的屁股",
+  "cuz the whole clase call me XMM",
+  "Stop fooling around like crowns doing a stupid show",
+  "IS THIS A FISH MARKET (Slaps the wallet on the ground)",
+  "I went to new york, walk over water with nothing but my bare feet",
+  "DO I MAKE MYSELF CLEAR!?",
+  "I WENT TO CHINA (WITH TWO BICYCLE WHEELS)"
 ];
 
 module.exports = {
