@@ -51,7 +51,7 @@ const SENTENCES = [
   "IS THIS A FISH MARKET (Slaps the wallet on the ground)",
   "I went to new york, walk over water with nothing but my bare feet",
   "DO I MAKE MYSELF CLEAR!?",
-  "I WENT TO CHINA (WITH TWO BICYCLE WHEELS)"
+  "I WENT TO CHINA (WITH TWO BICYCLE WHEELS)",
   "Next station, Jurong East",
   "DOORS ARE CLOSING",
   "SMRT",
