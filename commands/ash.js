@@ -52,6 +52,21 @@ const SENTENCES = [
   "I went to new york, walk over water with nothing but my bare feet",
   "DO I MAKE MYSELF CLEAR!?",
   "I WENT TO CHINA (WITH TWO BICYCLE WHEELS)"
+  "Next station, Jurong East",
+  "DOORS ARE CLOSING",
+  "SMRT",
+  "what the actual shucks bro",
+  "I SUMMON RAYDEN DEN YALL KNOW",
+  "SPAM SUMMORE SPAM SUMMORE",
+  "YALL 把我们的话当成耳边风",
+  "TELL YALL PAY ATTENTION IN CLASS, GO STUDY",
+  "ARE YOU GUYS ILLITERATE OR JUST PLAIN STUPID",
+  "DON'T UNDERSTAND SIMPLE ENGLISH AH",
+  "I TELL YALL STOP SPAMMING HOW MANY TIMES ALREADY",
+  "OI OI OI”,
+  "SHUT UP U DING DOING",
+  "うるさい",
+  "こんにちは",
 ];
 
 module.exports = {
