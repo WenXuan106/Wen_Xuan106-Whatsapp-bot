@@ -69,7 +69,7 @@ const SENTENCES = [
   "こんにちは",
   "This video is sponsored by our sponsor, who, as you may have already correctly and undoubtedly assumed, is in fact the sponsor of this very video that you are currently watching. Yes, you heard that right: the sponsor sponsoring this video is none other than the sponsor who has sponsored this video, making them, by definition, the official sponsor of this sponsored video.Now, you might be wondering: “Who exactly is sponsoring this video?” Well, I’m glad you asked, because the answer is incredibly important and absolutely worth repeating: the sponsor is the sponsor of the video. And who sponsored the sponsor? Nobody, because the sponsor is already the sponsor. And what did they sponsor? This video. Which video? This video. The very video in which we are currently talking about the sponsor who sponsored the video.So, to recap: this video has a sponsor. That sponsor is sponsoring the video. The sponsor of the video is therefore the sponsor, and the video is sponsored by that sponsor. This means that the sponsor is, in fact, sponsoring the sponsored video that they are the sponsor of.And with that incredibly important clarification out of the way, and now that we have established beyond any reasonable doubt that the sponsor of this video is indeed the sponsor sponsoring this video, let’s finally stop talking about the sponsor sponsoring the video and continue with the actual video.",
   "GOOD BOY",
-  "GOOD GIRL",
+  "GOOD GIRL"
 ];
 
 module.exports = {
