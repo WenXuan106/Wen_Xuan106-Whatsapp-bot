@@ -69,7 +69,31 @@ const SENTENCES = [
   "こんにちは",
   "This video is sponsored by our sponsor, who, as you may have already correctly and undoubtedly assumed, is in fact the sponsor of this very video that you are currently watching. Yes, you heard that right: the sponsor sponsoring this video is none other than the sponsor who has sponsored this video, making them, by definition, the official sponsor of this sponsored video.Now, you might be wondering: “Who exactly is sponsoring this video?” Well, I’m glad you asked, because the answer is incredibly important and absolutely worth repeating: the sponsor is the sponsor of the video. And who sponsored the sponsor? Nobody, because the sponsor is already the sponsor. And what did they sponsor? This video. Which video? This video. The very video in which we are currently talking about the sponsor who sponsored the video.So, to recap: this video has a sponsor. That sponsor is sponsoring the video. The sponsor of the video is therefore the sponsor, and the video is sponsored by that sponsor. This means that the sponsor is, in fact, sponsoring the sponsored video that they are the sponsor of.And with that incredibly important clarification out of the way, and now that we have established beyond any reasonable doubt that the sponsor of this video is indeed the sponsor sponsoring this video, let’s finally stop talking about the sponsor sponsoring the video and continue with the actual video.",
   "GOOD BOY",
-  "GOOD GIRL"
+  "GOOD GIRL",
+  "Max Verstappen wins the Aerosecure grand prix!",
+  "my admin bu jian le",
+  "AHEM”,
+  "Want a break from the ads? If you tap now to watch a short video you'll get 30 minutes of ad free music! Yes, really! If you tap now you'll get 30 minutes of ad free music! So what are you waiting for? I'm still waiting.. Why aren't you tapping? Don't you want 30 minutes of ad free music? If you tap now and watch the short video you'll get 30 minutes of ad free music! It's that easy! If you want to be free from the ads forever consider buying spotify premium! With spotify premium, you get ad free music, forever! And if you tap below you can get the first 3 months for free! Terms and Conditions apply",
+  "BRO I SAW A FLASH",
+  "!ash",
+  "BROSKI",
+  "bro",
+  "In the universe, we have the atmosphre, exosphere, lithosphere and biosphere. But losing you is my biggestsphere.",
+  "Are you made out of Copper and Tellerium? Cuz you’re made cute.",
+  "Can you be element Br but without the Bro?",
+  "MAJULAH SINGAPURAAA",
+  "Senpaiiiiiiiii~",
+  "Kohaiiiiiii~~",
+  "*SON* PHU QUOC AIRWAYS",
+  "REPUBLIC OF *SON* GAPORE AIR FORCE",
+  "*SON* NILA UTAMA",
+  "*SON* GAPORE",
+  "*SON* GAPORE AIRLINES",
+  "you’re not mine",
+  "you're mine forever",
+  "OI",
+  "i ain’t gonna rizz u up cuz you’re not mine",
+  "Spell out 'Biology'"
 ];
 
 module.exports = {
