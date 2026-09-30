@@ -43,4 +43,8 @@ SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || "",
 
 //Telegram Bot Token
 TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
+
+// Your numeric Telegram user id (get it by messaging @userinfobot). Used for
+// owner-only commands like !stop on Telegram. Leave blank to disable them there.
+TELEGRAM_OWNER_ID: process.env.TELEGRAM_OWNER_ID || "",
 };
