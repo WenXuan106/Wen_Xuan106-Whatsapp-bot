@@ -6,7 +6,7 @@ const CATEGORIES = {
   "🧭 GENERAL": ["help", "ping"],
   "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute", "warn", "warnings", "welcome"],
   "🎭 FUN": ["ash", "8ball", "answer", "coinflip", "dice", "geography", "hangman", "meme", "rps", "science", "ship", "trivia", "ttt"],
-  "🎞️ MEDIA": ["lyrics", "song", "status", "spotify", "vocaloid","pfp"],
+  "🎞️ MEDIA": ["lyrics", "song", "status", "spotify", "video", "vocaloid","pfp"],
   "🌍 UTILITY": ["topmembers", "translate", "weather"],
   "👑 OWNER": ["stop"],
 };
