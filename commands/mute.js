@@ -1,23 +1,26 @@
-const { getGroupAdminStatus } = require("../lib/admin");
-
 module.exports = {
   name: "mute",
   description: "Restrict the group so only admins can send messages. Admins only.",
-  async execute({ sock, msg, jid, getGroupMetadata }) {
-    if (!jid.endsWith("@g.us")) {
-      return sock.sendMessage(jid, { text: "This command only works in groups." });
+  async execute(ctx) {
+    if (!ctx.isGroup) {
+      return ctx.sendText("This command only works in groups.");
     }
 
-    const { senderIsAdmin, botIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
+    const { senderIsAdmin, botIsAdmin } = await ctx.getAdminStatus();
 
     if (!senderIsAdmin) {
-      return sock.sendMessage(jid, { text: "Only group admins can use this command." });
+      return ctx.sendText("Only group admins can use this command.");
     }
     if (!botIsAdmin) {
-      return sock.sendMessage(jid, { text: "I need to be a group admin to do that." });
+      return ctx.sendText("I need to be a group admin to do that.");
     }
 
-    await sock.groupSettingUpdate(jid, "announcement");
-    await sock.sendMessage(jid, { text: "Group muted — only admins can send messages now." });
+    try {
+      await ctx.setGroupLocked(true);
+    } catch (err) {
+      console.error("mute command failed:", err.message);
+      return ctx.sendText("Couldn't mute the group — check that I have permission to change group settings.");
+    }
+    await ctx.sendText("Group muted — only admins can send messages now.");
   },
 };

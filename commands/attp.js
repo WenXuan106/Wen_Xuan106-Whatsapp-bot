@@ -22,28 +22,36 @@ function escapeDrawtext(text) {
     .replace(/%/g, "\\%");
 }
 
-// Renders 1.8s of video where the text cycles red/blue/green — the "blink"
-// effect — as raw mp4 bytes via ffmpeg's lavfi color source + drawtext filter.
+// Builds the ffmpeg input + filter arguments shared by both renderers below:
+// 1.8s of video where the text cycles red/blue/green — the "blink" effect —
+// from ffmpeg's lavfi color source + drawtext filter.
+function blinkArgs(text) {
+  const safeText = escapeDrawtext(text);
+  const cycle = 0.3;
+  const dur = 1.8;
+
+  const layer = (color, enable) =>
+    `drawtext=fontfile='${FONT_PATH}':text='${safeText}':fontcolor=${color}:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='${enable}'`;
+
+  const filter = [
+    layer("red", `lt(mod(t\\,${cycle})\\,0.1)`),
+    layer("blue", `between(mod(t\\,${cycle})\\,0.1\\,0.2)`),
+    layer("green", `gte(mod(t\\,${cycle})\\,0.2)`),
+  ].join(",");
+
+  return {
+    dur,
+    args: ["-y", "-f", "lavfi", "-i", `color=c=black:s=512x512:d=${dur}:r=20`, "-vf", filter],
+  };
+}
+
+// Renders the blinking video as raw (fragmented) mp4 bytes, piped from ffmpeg.
+// Used for the WhatsApp sticker path, which converts it to an animated webp.
 function renderBlinkingVideo(text) {
   return new Promise((resolve, reject) => {
-    const safeText = escapeDrawtext(text);
-    const cycle = 0.3;
-    const dur = 1.8;
-
-    const layer = (color, enable) =>
-      `drawtext=fontfile='${FONT_PATH}':text='${safeText}':fontcolor=${color}:borderw=2:bordercolor=black@0.6:fontsize=56:x=(w-text_w)/2:y=(h-text_h)/2:enable='${enable}'`;
-
-    const filter = [
-      layer("red", `lt(mod(t\\,${cycle})\\,0.1)`),
-      layer("blue", `between(mod(t\\,${cycle})\\,0.1\\,0.2)`),
-      layer("green", `gte(mod(t\\,${cycle})\\,0.2)`),
-    ].join(",");
-
+    const { dur, args: baseArgs } = blinkArgs(text);
     const args = [
-      "-y",
-      "-f", "lavfi",
-      "-i", `color=c=black:s=512x512:d=${dur}:r=20`,
-      "-vf", filter,
+      ...baseArgs,
       "-c:v", "libx264",
       "-pix_fmt", "yuv420p",
       "-movflags", "+faststart+frag_keyframe+empty_moov",
@@ -61,6 +69,43 @@ function renderBlinkingVideo(text) {
     ff.on("close", (code) => {
       if (code === 0) return resolve(Buffer.concat(chunks));
       reject(new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`));
+    });
+  });
+}
+
+// Telegram can't show an animated .webp as a sticker (its animated stickers
+// are a different format), so there the same blink effect is sent as a
+// looping animation instead. Telegram wants a normal, complete mp4 (not the
+// fragmented one above), so this writes a real temp file and reads it back.
+function renderBlinkingMp4File(text) {
+  return new Promise((resolve, reject) => {
+    const { dur, args: baseArgs } = blinkArgs(text);
+    const tmpFile = path.join(os.tmpdir(), `attp-${crypto.randomUUID()}.mp4`);
+    const args = [
+      ...baseArgs,
+      "-c:v", "libx264",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      "-an",
+      "-t", String(dur),
+      tmpFile,
+    ];
+
+    const ff = spawn("ffmpeg", args);
+    const errors = [];
+    ff.stderr.on("data", (e) => errors.push(e));
+    ff.on("error", reject);
+    ff.on("close", async (code) => {
+      try {
+        if (code !== 0) {
+          throw new Error(Buffer.concat(errors).toString() || `ffmpeg exited with code ${code}`);
+        }
+        resolve(await fs.readFile(tmpFile));
+      } catch (err) {
+        reject(err);
+      } finally {
+        fs.unlink(tmpFile).catch(() => {}); // best-effort cleanup
+      }
     });
   });
 }
@@ -115,20 +160,26 @@ function mp4ToAnimatedWebp(mp4Buffer) {
 module.exports = {
   name: "attp",
   description: "Make an animated blinking-text sticker, e.g. !attp Hello",
-  async execute({ sock, jid, msg, args }) {
-    const text = args.join(" ").trim();
+  async execute(ctx) {
+    const text = ctx.args.join(" ").trim();
     if (!text) {
-      return sock.sendMessage(jid, { text: "Usage: !attp <text>" }, { quoted: msg });
+      return ctx.sendText("Usage: !attp <text>");
     }
 
     try {
+      if (ctx.platform === "telegram") {
+        const mp4 = await renderBlinkingMp4File(text);
+        await ctx.sendAnimation(mp4);
+        return;
+      }
+
       const mp4Buffer = await renderBlinkingVideo(text);
       const webpBuffer = await mp4ToAnimatedWebp(mp4Buffer);
       const stickerBuffer = await addStickerExif(webpBuffer, { packname: config.BOT_NAME });
-      await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
+      await ctx.sendSticker(stickerBuffer);
     } catch (err) {
       console.error("attp command failed:", err.stack || err.message);
-      await sock.sendMessage(jid, { text: "❌ Failed to generate the sticker." }, { quoted: msg });
+      await ctx.sendText("❌ Failed to generate the sticker.");
     }
   },
 };

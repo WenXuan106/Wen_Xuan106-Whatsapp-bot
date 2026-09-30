@@ -1,24 +1,40 @@
-const { getGroupAdminStatus } = require("../lib/admin");
+// Telegram caps a message at 4096 characters and rate-limits mentions, so
+// there the tags are split across several messages. WhatsApp keeps sending
+// one message with everyone in it, as before.
+const TELEGRAM_BATCH_SIZE = 30;
 
 module.exports = {
   name: "tagall",
   description: "Mention every member of the group, e.g. !tagall meeting starting now. Admins only.",
-  async execute({ sock, msg, jid, args, getGroupMetadata }) {
-    if (!jid.endsWith("@g.us")) {
-      return sock.sendMessage(jid, { text: "This command only works in groups." });
+  async execute(ctx) {
+    if (!ctx.isGroup) {
+      return ctx.sendText("This command only works in groups.");
     }
 
-    const { senderIsAdmin, participants } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
+    const { senderIsAdmin } = await ctx.getAdminStatus();
     if (!senderIsAdmin) {
-      return sock.sendMessage(jid, { text: "Only group admins can use this command." });
+      return ctx.sendText("Only group admins can use this command.");
     }
 
-    const note = args.join(" ").trim();
-    const mentions = participants.map((p) => p.id);
+    const note = ctx.args.join(" ").trim();
+    const mentions = await ctx.listMembers();
+    const header = note ? `📢 ${note}` : "📢 Attention everyone!";
 
-    const lines = [note ? `📢 ${note}` : "📢 Attention everyone!", ""];
-    lines.push(...mentions.map((id) => `@${id.split("@")[0]}`));
+    if (ctx.platform !== "telegram") {
+      const lines = [header, ""];
+      lines.push(...mentions.map((id) => `@${ctx.shortId(id)}`));
+      return ctx.sendMention(lines.join("\n"), mentions);
+    }
 
-    await sock.sendMessage(jid, { text: lines.join("\n"), mentions }, { quoted: msg });
+    if (mentions.length === 0) {
+      return ctx.sendText(header);
+    }
+
+    for (let i = 0; i < mentions.length; i += TELEGRAM_BATCH_SIZE) {
+      const batch = mentions.slice(i, i + TELEGRAM_BATCH_SIZE);
+      const lines = [i === 0 ? header : "📢 …", ""];
+      lines.push(...batch.map((id) => `@${ctx.shortId(id)}`));
+      await ctx.sendMention(lines.join("\n"), batch);
+    }
   },
 };

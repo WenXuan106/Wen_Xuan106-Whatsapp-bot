@@ -4,21 +4,16 @@ const config = require("../config");
 module.exports = {
   name: "gpt",
   description: "Ask a question to OpenAI's GPT, e.g. !gpt what is quantum computing?",
-  async execute({ sock, jid, msg, args }) {
-    const query = args.join(" ").trim();
+  async execute(ctx) {
+    const query = ctx.args.join(" ").trim();
     if (!query) {
-      return sock.sendMessage(jid, { text: "Usage: !gpt <question>" }, { quoted: msg });
+      return ctx.sendText("Usage: !gpt <question>");
     }
 
     if (!config.OPENAI_API_KEY) {
-      return sock.sendMessage(
-        jid,
-        {
-          text:
-            "⚠️ !gpt isn't set up yet. Set the OPENAI_API_KEY environment variable " +
-            "(get one at https://platform.openai.com/api-keys) and restart the bot.",
-        },
-        { quoted: msg }
+      return ctx.sendText(
+        "⚠️ !gpt isn't set up yet. Set the OPENAI_API_KEY environment variable " +
+          "(get one at https://platform.openai.com/api-keys) and restart the bot."
       );
     }
 
@@ -44,7 +39,7 @@ module.exports = {
         throw new Error("Empty response from OpenAI");
       }
 
-      await sock.sendMessage(jid, { text: answer }, { quoted: msg });
+      await ctx.sendText(answer);
     } catch (err) {
       const detail = err.response
         ? `HTTP ${err.response.status}: ${JSON.stringify(err.response.data?.error?.message || err.response.data)}`
@@ -57,7 +52,7 @@ module.exports = {
       } else if (err.response?.status === 429) {
         userMessage = "❌ Rate limit or quota exceeded on the OpenAI account. Try again shortly, or check your billing.";
       }
-      await sock.sendMessage(jid, { text: userMessage }, { quoted: msg });
+      await ctx.sendText(userMessage);
     }
   },
 };

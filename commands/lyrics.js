@@ -5,14 +5,10 @@ const MAX_CHARS = 4096;
 module.exports = {
   name: "lyrics",
   description: "Look up song lyrics, e.g. !lyrics shape of you",
-  async execute({ sock, jid, msg, args }) {
-    const songTitle = args.join(" ").trim();
+  async execute(ctx) {
+    const songTitle = ctx.args.join(" ").trim();
     if (!songTitle) {
-      return sock.sendMessage(
-        jid,
-        { text: "🔍 Please enter a song name. Usage: !lyrics <song name>" },
-        { quoted: msg }
-      );
+      return ctx.sendText("🔍 Please enter a song name. Usage: !lyrics <song name>");
     }
 
     try {
@@ -32,27 +28,19 @@ module.exports = {
       const lyrics = match?.plainLyrics;
 
       if (!lyrics) {
-        return sock.sendMessage(
-          jid,
-          { text: `❌ Sorry, I couldn't find any lyrics for "${songTitle}".` },
-          { quoted: msg }
-        );
+        return ctx.sendText(`❌ Sorry, I couldn't find any lyrics for "${songTitle}".`);
       }
 
       const header = `🎵 *${match.trackName}*${match.artistName ? ` — ${match.artistName}` : ""}\n\n`;
       const budget = MAX_CHARS - header.length;
       const body = lyrics.length > budget ? `${lyrics.slice(0, budget - 3)}...` : lyrics;
-      await sock.sendMessage(jid, { text: header + body }, { quoted: msg });
+      await ctx.sendText(header + body);
     } catch (error) {
       const detail = error.response
         ? `HTTP ${error.response.status}`
         : error.code || error.message;
       console.error(`Error in lyrics command (${detail}):`, error.message);
-      await sock.sendMessage(
-        jid,
-        { text: `❌ Couldn't fetch lyrics for "${songTitle}" right now (${detail}). Try again in a bit.` },
-        { quoted: msg }
-      );
+      await ctx.sendText(`❌ Couldn't fetch lyrics for "${songTitle}" right now (${detail}). Try again in a bit.`);
     }
   },
 };

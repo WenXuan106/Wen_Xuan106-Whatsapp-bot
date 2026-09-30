@@ -1,27 +1,21 @@
 module.exports = {
   name: "delete",
   description: "Delete a message — reply to it with !delete. Admins only in groups.",
-  async execute({ sock, msg, jid, getGroupMetadata }) {
-    const contextInfo = msg.message?.extendedTextMessage?.contextInfo;
-    if (!contextInfo?.stanzaId) {
-      return sock.sendMessage(jid, { text: "Reply to the message you want deleted with !delete." });
+  async execute(ctx) {
+    if (!ctx.hasReply()) {
+      return ctx.sendText("Reply to the message you want deleted with !delete.");
     }
 
-    if (jid.endsWith("@g.us")) {
-      const { getGroupAdminStatus } = require("../lib/admin");
-      const { senderIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
+    if (ctx.isGroup) {
+      const { senderIsAdmin } = await ctx.getAdminStatus();
       if (!senderIsAdmin) {
-        return sock.sendMessage(jid, { text: "Only group admins can delete others' messages." });
+        return ctx.sendText("Only group admins can delete others' messages.");
       }
     }
 
-    await sock.sendMessage(jid, {
-      delete: {
-        remoteJid: jid,
-        fromMe: false,
-        id: contextInfo.stanzaId,
-        participant: contextInfo.participant,
-      },
-    });
+    const deleted = await ctx.deleteReplied();
+    if (!deleted) {
+      await ctx.sendText("❌ Couldn't delete that message — I may need admin rights with permission to delete messages.");
+    }
   },
 };

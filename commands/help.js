@@ -20,14 +20,15 @@ function box(lines) {
 module.exports = {
   name: "help",
   description: "Show the command menu",
-  async execute({ sock, msg, jid, commands }) {
-    const sender = msg.key.participant || msg.key.remoteJid;
+  async execute(ctx) {
+    const { commands } = ctx;
+    const sender = ctx.senderId;
     const categorized = new Set(Object.values(CATEGORIES).flat());
     const other = [...commands.keys()].filter((name) => !categorized.has(name));
 
     const lines = [];
     lines.push(`╭━━『 *${config.BOT_NAME}* 』━━╮`, "");
-    lines.push(`👋 Hello @${sender.split("@")[0]}!`, "");
+    lines.push(`👋 Hello @${ctx.shortId(sender)}!`, "");
     lines.push(`⚡ Prefix: ${config.PREFIX}`);
     lines.push(`📦 Total Commands: ${commands.size}`);
     if (config.OWNER_NAME) lines.push(`👑 Owner: ${config.OWNER_NAME}`);
@@ -49,6 +50,6 @@ module.exports = {
 
     lines.push("╰━━━━━━━━━━━━━━━━━");
 
-    await sock.sendMessage(jid, { text: lines.join("\n"), mentions: [sender] }, { quoted: msg });
+    await ctx.sendMention(lines.join("\n"), [sender]);
   },
 };

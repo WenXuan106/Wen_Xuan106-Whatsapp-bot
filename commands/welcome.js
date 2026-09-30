@@ -1,48 +1,46 @@
-const { getGroupAdminStatus } = require("../lib/admin");
 const { getSettings, setEnabled, setMessage } = require("../lib/welcome");
 
 module.exports = {
   name: "welcome",
   description: "Manage the join greeting: !welcome on/off, or !welcome set <message with {user} {group}>. Admins only.",
-  async execute({ sock, msg, jid, args, getGroupMetadata }) {
-    if (!jid.endsWith("@g.us")) {
-      return sock.sendMessage(jid, { text: "This command only works in groups." });
+  async execute(ctx) {
+    if (!ctx.isGroup) {
+      return ctx.sendText("This command only works in groups.");
     }
 
-    const { senderIsAdmin } = await getGroupAdminStatus(sock, jid, msg, getGroupMetadata);
+    const { senderIsAdmin } = await ctx.getAdminStatus();
     if (!senderIsAdmin) {
-      return sock.sendMessage(jid, { text: "Only group admins can use this command." });
+      return ctx.sendText("Only group admins can use this command.");
     }
 
-    const sub = (args[0] || "").toLowerCase();
+    // Settings are stored per chat, keyed by the chat id as a string.
+    const chatKey = String(ctx.chatId);
+    const sub = (ctx.args[0] || "").toLowerCase();
 
     if (sub === "on") {
-      setEnabled(jid, true);
-      return sock.sendMessage(jid, { text: "✅ Welcome messages turned on." });
+      setEnabled(chatKey, true);
+      return ctx.sendText("✅ Welcome messages turned on.");
     }
 
     if (sub === "off") {
-      setEnabled(jid, false);
-      return sock.sendMessage(jid, { text: "🚫 Welcome messages turned off." });
+      setEnabled(chatKey, false);
+      return ctx.sendText("🚫 Welcome messages turned off.");
     }
 
     if (sub === "set") {
-      const message = args.slice(1).join(" ").trim();
+      const message = ctx.args.slice(1).join(" ").trim();
       if (!message) {
-        return sock.sendMessage(jid, {
-          text: "Usage: !welcome set <message>\nUse {user} and {group} as placeholders.",
-        });
+        return ctx.sendText("Usage: !welcome set <message>\nUse {user} and {group} as placeholders.");
       }
-      setMessage(jid, message);
-      return sock.sendMessage(jid, { text: "✅ Custom welcome message saved." });
+      setMessage(chatKey, message);
+      return ctx.sendText("✅ Custom welcome message saved.");
     }
 
-    const settings = getSettings(jid);
-    await sock.sendMessage(jid, {
-      text:
-        `👋 Welcome messages: *${settings.enabled ? "ON" : "OFF"}*\n` +
+    const settings = getSettings(chatKey);
+    await ctx.sendText(
+      `👋 Welcome messages: *${settings.enabled ? "ON" : "OFF"}*\n` +
         `Message: ${settings.message || "(default)"}\n\n` +
-        `Usage:\n!welcome on\n!welcome off\n!welcome set <message with {user} {group}>`,
-    });
+        `Usage:\n!welcome on\n!welcome off\n!welcome set <message with {user} {group}>`
+    );
   },
 };

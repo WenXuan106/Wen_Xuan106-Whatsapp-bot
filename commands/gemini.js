@@ -13,10 +13,10 @@ const GEMINI_PROVIDERS = [
 module.exports = {
   name: "gemini",
   description: "Ask Google's Gemini model a question, e.g. !gemini explain black holes",
-  async execute({ sock, jid, msg, args }) {
-    const query = args.join(" ").trim();
+  async execute(ctx) {
+    const query = ctx.args.join(" ").trim();
     if (!query) {
-      return sock.sendMessage(jid, { text: "Usage: !gemini <question>" }, { quoted: msg });
+      return ctx.sendText("Usage: !gemini <question>");
     }
 
     for (const buildUrl of GEMINI_PROVIDERS) {
@@ -30,7 +30,7 @@ module.exports = {
         const data = await res.json();
         const answer = data.message || data.data || data.answer || data.result;
         if (answer) {
-          return sock.sendMessage(jid, { text: String(answer) }, { quoted: msg });
+          return ctx.sendText(String(answer));
         }
         console.error(`gemini provider returned no usable answer (${url}):`, JSON.stringify(data));
       } catch (err) {
@@ -39,10 +39,6 @@ module.exports = {
       }
     }
 
-    await sock.sendMessage(
-      jid,
-      { text: "❌ All AI providers failed. Please try again later." },
-      { quoted: msg }
-    );
+    await ctx.sendText("❌ All AI providers failed. Please try again later.");
   },
 };

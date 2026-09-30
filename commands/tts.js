@@ -45,13 +45,10 @@ module.exports = {
   name: "tts",
   description:
     "Convert text to speech with Google's voice, e.g. !tts hello there — or with a language code: !tts es hola",
-  async execute({ sock, jid, msg, args }) {
+  async execute(ctx) {
+    const { args } = ctx;
     if (!args.length) {
-      return sock.sendMessage(
-        jid,
-        { text: "Usage: !tts <text>\nOptional language code: !tts es hola, como estas?" },
-        { quoted: msg }
-      );
+      return ctx.sendText("Usage: !tts <text>\nOptional language code: !tts es hola, como estas?");
     }
 
     // Optional 2-letter language code as the first word, e.g. "!tts es hola"
@@ -64,18 +61,10 @@ module.exports = {
     }
 
     if (!text) {
-      return sock.sendMessage(
-        jid,
-        { text: "Give me some text to speak, e.g. !tts hello there" },
-        { quoted: msg }
-      );
+      return ctx.sendText("Give me some text to speak, e.g. !tts hello there");
     }
     if (text.length > MAX_CHARS) {
-      return sock.sendMessage(
-        jid,
-        { text: `That's too long (${text.length} chars). Keep it under ${MAX_CHARS} characters.` },
-        { quoted: msg }
-      );
+      return ctx.sendText(`That's too long (${text.length} chars). Keep it under ${MAX_CHARS} characters.`);
     }
 
     try {
@@ -97,22 +86,14 @@ module.exports = {
       const mp3 = Buffer.concat(buffers);
       const audio = await mp3ToOggOpus(mp3);
 
-      // ptt: true sends it as a playable voice note rather than a
-      // downloadable audio file attachment. It must be Ogg/Opus (not the
-      // raw mp3 Google returns) or WhatsApp — especially on iOS — will
-      // show it as an unplayable/corrupt voice note.
-      await sock.sendMessage(
-        jid,
-        { audio, mimetype: "audio/ogg; codecs=opus", ptt: true },
-        { quoted: msg }
-      );
+      // Sent as a playable voice note rather than a downloadable audio
+      // file. It must be Ogg/Opus (not the raw mp3 Google returns) or
+      // WhatsApp — especially on iOS — will show it as an unplayable/corrupt
+      // voice note. Telegram's voice notes use the same Ogg/Opus format.
+      await ctx.sendVoice(audio);
     } catch (err) {
       console.error("tts command failed:", err);
-      await sock.sendMessage(
-        jid,
-        { text: "⚠️ Couldn't generate speech for that. Try a shorter message or check the language code." },
-        { quoted: msg }
-      );
+      await ctx.sendText("⚠️ Couldn't generate speech for that. Try a shorter message or check the language code.");
     }
   },
 };

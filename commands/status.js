@@ -53,7 +53,14 @@ function getQuotedMedia(msg) {
 module.exports = {
   name: "status",
   description: "Post a WhatsApp Status update (text, or reply to an image/video), e.g. !status Good morning!",
-  async execute({ sock, jid, msg, args, getGroupMetadata }) {
+  async execute(ctx) {
+    // WhatsApp Status has no Telegram bot equivalent (bots can't post
+    // Telegram Stories), so on Telegram this just explains that.
+    if (ctx.platform !== "whatsapp") {
+      return ctx.sendText("❌ !status posts to WhatsApp Status, which doesn't exist on Telegram — it only works from WhatsApp.");
+    }
+
+    const { sock, jid, msg, args, getGroupMetadata } = ctx;
     const caption = args.join(" ").trim();
     const quotedMedia = getQuotedMedia(msg);
 
