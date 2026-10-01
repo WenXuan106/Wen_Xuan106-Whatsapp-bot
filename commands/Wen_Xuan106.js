@@ -97,7 +97,7 @@ const SENTENCES = [
 ];
 
 module.exports = {
-  name: "ash",
+  name: "Wen_Xuan106",
   description: "Says something random",
   async execute(ctx) {
     const line = SENTENCES[Math.floor(Math.random() * SENTENCES.length)];
