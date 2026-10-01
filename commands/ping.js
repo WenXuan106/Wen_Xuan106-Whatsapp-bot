@@ -33,7 +33,7 @@ module.exports = {
       divider,
       "",
       `📢 *Stay updated:*`,
-      `https://whatsapp.com/channel/0029VbBbyJO2v1IxySsZL72i`,
+      `https://whatsapp.com/channel/0029VbCGGUaISTkN7tmOHp03`,
       "",
       divider,
       "",
