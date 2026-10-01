@@ -9,7 +9,7 @@ module.exports = {
       return ctx.sendText(stopped ? "🛑 Tic-tac-toe stopped." : "No game is currently running.");
     }
 
-    const result = startGame(ctx.chatId, ctx.senderId);
+    const result = startGame(ctx.chatId, ctx.senderId, ctx.senderName);
     if (result.error) {
       return ctx.sendText(result.error);
     }

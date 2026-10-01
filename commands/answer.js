@@ -1,4 +1,5 @@
 const { getActive, clearActive } = require("../lib/quiz");
+const { recordResult, POINTS } = require("../lib/scores");
 
 module.exports = {
   name: "answer",
@@ -16,7 +17,8 @@ module.exports = {
 
     if (question.answers.includes(guess)) {
       clearActive(ctx.chatId);
-      await ctx.sendText("✅ Correct!");
+      recordResult(ctx.senderId, ctx.senderName, "quiz", { result: "win", points: POINTS.quizWin });
+      await ctx.sendText(`✅ Correct! 🏅 +${POINTS.quizWin} points for ${ctx.senderName || "you"}`);
     } else {
       await ctx.sendText("❌ Not quite, try again.");
     }
