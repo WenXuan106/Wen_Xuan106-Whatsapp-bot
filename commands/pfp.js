@@ -1,22 +1,29 @@
-const { getMentionedJid, getQuotedParticipant } = require("../lib/admin");
+const axios = require("axios");
 
 module.exports = {
   name: "pfp",
   description: "Get someone's profile picture — reply to their message, @mention them, or use alone for your own.",
-  async execute({ sock, jid, msg }) {
-    const targetJid =
-      getMentionedJid(msg) || getQuotedParticipant(msg) || msg.key.participant || msg.key.remoteJid;
+  async execute(ctx) {
+    const targetId = String(ctx.getTargetUser() || ctx.senderId);
 
     try {
-      const url = await sock.profilePictureUrl(targetJid, "image");
-      await sock.sendMessage(jid, { image: { url }, caption: "📸 Profile picture" }, { quoted: msg });
+      const url = await ctx.getProfilePictureUrl(targetId);
+      if (!url) {
+        return ctx.sendText("❌ Couldn't fetch that profile picture (they may not have one set, or it's private).");
+      }
+
+      // Download the picture and send the raw bytes instead of the link. On
+      // Telegram the link contains the bot token, so it must never be sent
+      // to a chat or handed to anyone else.
+      const res = await axios.get(url, {
+        responseType: "arraybuffer",
+        timeout: 15000,
+        maxContentLength: 10 * 1024 * 1024,
+      });
+      await ctx.sendImage(Buffer.from(res.data), "📸 Profile picture");
     } catch (err) {
       console.error("pfp command failed:", err.message);
-      await sock.sendMessage(
-        jid,
-        { text: "❌ Couldn't fetch that profile picture (they may not have one set, or it's private)." },
-        { quoted: msg }
-      );
+      await ctx.sendText("❌ Couldn't fetch that profile picture (they may not have one set, or it's private).");
     }
   },
 };
