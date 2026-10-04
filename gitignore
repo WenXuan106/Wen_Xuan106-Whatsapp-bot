@@ -3,6 +3,9 @@ node_modules/
 # WhatsApp session credentials — anyone with these can control your account
 auth_info_baileys/
 
+# Scores, ban list, warnings and other runtime data
+data/
+
 .env
 .env.*
 *.log
