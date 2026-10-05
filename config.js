@@ -44,6 +44,11 @@ SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || "",
 //Telegram Bot Token
 TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
 
+// Password for the group on/off page on the website (/groups.html). Pick
+// something long and private — anyone who has it can switch the bot on and
+// off in your groups. Leave blank to turn that page off completely.
+DASHBOARD_PASSWORD: process.env.DASHBOARD_PASSWORD || "",
+
 // Your numeric Telegram user id (get it by messaging @userinfobot). Used for
 // owner-only commands like !stop on Telegram. Leave blank to disable them there.
 TELEGRAM_OWNER_ID: process.env.TELEGRAM_OWNER_ID || "",

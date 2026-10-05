@@ -19,7 +19,8 @@ occasionally triggers a warning or ban on that number. The Telegram side uses th
 - `lib/commands.js` — auto-loads every file in `commands/`
 - `commands/` — one file per command (list below)
 - `lib/` — shared pieces: scoring (`scores.js`), the profile and weather card images (`profilecard.js`, `weathercard.js`), the games, the ban list, warnings, civilguard, welcome messages, and so on
-- `public/` — the pairing website (plain HTML/CSS/JS, no build step)
+- `public/` — the website (plain HTML/CSS/JS, no build step): the pairing page (`index.html`) and the group on/off switch (`groups.html`)
+- `lib/dashboard.js` — the password-protected API behind the group switch page
 - `config.js` — prefix, port, session folder, API keys, owner settings
 
 ## Run it locally
@@ -69,6 +70,7 @@ All settings live in `config.js` and can be overridden with environment variable
 | `BOT_NAME` | Bot name shown in the menu and on the weather/profile cards |
 | `OWNER_NAME` | Shown as "Owner" in `!help` |
 | `OWNER_NUMBER` | Optional extra WhatsApp number (digits only, with country code) that counts as owner for `!stop`. Messages sent from the bot's own linked account always count |
+| `DASHBOARD_PASSWORD` | Password for the group on/off page on the website. Leave blank to turn that page off |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
 | `TELEGRAM_OWNER_ID` | Your numeric Telegram user id, for owner-only commands like `!stop` |
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | For `!gpt` (model defaults to `gpt-4o-mini`) |
@@ -127,6 +129,7 @@ commands check the sender's admin status on whichever platform they're sent from
 - `!mute`, `!unmute` — restrict the group so only admins can send messages
 - `!delete` — reply to a message with `!delete` to remove it
 - `!tagall [message]` — mention everyone. On Telegram bots can't list a group's members, so this tags the admins plus everyone the bot has seen talk, in batches of 30
+- `!bot off` / `!bot on` — switch the bot off or back on in just this group (plain `!bot` shows the current state). While it's off the bot ignores everything in that group — commands, games, civilguard and welcome messages — except `!bot on`. Admins and the bot owner only; the setting survives restarts. You can also do this from the website — see [Group switch on the website](#group-switch-on-the-website)
 - `!groupinfo` — group details
 - `!welcome on|off|set <message>` — greeting for new members; use `{user}` and `{group}` as placeholders
 - `!civilguard` — bad-word filter: `on`/`off`, add/remove words, or list status
@@ -134,6 +137,24 @@ commands check the sender's admin status on whichever platform they're sent from
 **Owner**
 
 - `!stop` — shut the bot down completely (WhatsApp **and** Telegram, since it's one process). On WhatsApp, owner means the bot's own linked account or `OWNER_NUMBER`; on Telegram it's `TELEGRAM_OWNER_ID`
+
+## Group switch on the website
+
+Besides `!bot on` / `!bot off` in the chat, the website has a page that lists every group the bot is
+in, each with an on/off switch — handy for silencing the bot in a group without opening it.
+
+1. Set a password in your `.env` (or your host's environment variables) and restart:
+   `DASHBOARD_PASSWORD=pick-something-long-and-private`
+2. Open `/groups.html` on your bot's website (there's also a "group switch →" link at the bottom of the pairing page), enter the password, and flip the switches.
+
+It's the same setting as `!bot on/off` — switching a group off on the website makes the bot ignore
+everything in that group (commands, games, civilguard, welcome messages) until you switch it back on,
+there or with `!bot on` from an admin. It takes effect immediately and survives restarts.
+
+- **WhatsApp groups** are listed while WhatsApp is connected (pair it first if the page says it isn't).
+- **Telegram groups** are listed once the bot has been added to them or has seen a message there.
+- With no `DASHBOARD_PASSWORD` set, the page and its API stay closed. After 10 wrong passwords the page locks for up to 15 minutes, so guessing isn't practical.
+- The password is sent with every request, so use the page over HTTPS (Render, Fly and Railway give you that automatically) rather than plain HTTP over the internet.
 
 ## Scoring and profiles
 
@@ -162,7 +183,7 @@ every chat the bot is in.
 ## Where data is stored
 
 Besides the WhatsApp session, the bot keeps small JSON files in a `data/` folder next to
-`index.js`: scores, the ban list, warnings, welcome and civilguard settings, message counts for
+`index.js`: scores, the ban list, warnings, welcome and civilguard settings, which groups the bot is switched off in, message counts for
 `!topmembers`, and Telegram's seen-users list. `data/` is in `.gitignore`.
 
 Like `auth_info_baileys/`, this folder is wiped on hosts without a persistent disk (see the

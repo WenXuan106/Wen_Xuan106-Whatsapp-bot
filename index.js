@@ -50,10 +50,14 @@ const express = require("express");
 const path = require("path");
 const config = require("./config");
 const { startSocket, getState, onUpdate, resumeSavedSession } = require("./lib/whatsapp");
+const { createDashboardRouter } = require("./lib/dashboard");
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Password-protected group on/off switch used by public/groups.html.
+app.use("/api/groups", createDashboardRouter());
 
 // We do NOT unconditionally start a socket on boot — starting one here and
 // then starting a second one when the user submits a phone number caused
