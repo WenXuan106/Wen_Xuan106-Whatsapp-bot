@@ -4,7 +4,7 @@ const config = require("../config");
 // Anything not listed here still shows up, under "OTHER".
 const CATEGORIES = {
   "🧭 GENERAL": ["help", "ping"],
-  "🛡️ ADMIN": ["ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute", "warn", "warnings", "welcome"],
+  "🛡️ ADMIN": ["bot", "ban", "civilguard", "delete", "demote", "groupinfo", "kick", "mute", "promote", "tagall", "unban", "unmute", "warn", "warnings", "welcome"],
   "🎭 FUN": ["ash", "8ball", "answer", "coinflip", "dice", "geography", "hangman", "meme", "rps", "science", "ship", "trivia", "ttt"],
   "🎞️ MEDIA": ["lyrics", "song", "status", "spotify", "video", "vocaloid","pfp"],
   "🌍 UTILITY": ["profile", "topmembers", "translate", "weather"],
