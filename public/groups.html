@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Group Switch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="groups.css" />
+</head>
+<body>
+  <main class="console console--wide">
+    <div class="console__bar">
+      <span class="dot dot--r"></span>
+      <span class="dot dot--y"></span>
+      <span class="dot dot--g"></span>
+      <span class="console__title">bot-switch ~ terminal</span>
+    </div>
+
+    <div class="console__body">
+      <p class="brand">bot-switch<span class="cursor">_</span></p>
+      <p class="sub">Turn the bot on or off in each group it's in.</p>
+
+      <div id="screen-login" class="screen">
+        <label class="field">
+          <span class="field__label">$ enter dashboard password</span>
+          <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+        </label>
+        <button id="login" class="btn">unlock</button>
+        <p id="login-error" class="error" hidden></p>
+      </div>
+
+      <div id="screen-groups" class="screen" hidden>
+        <input id="filter" type="search" placeholder="filter groups…" autocomplete="off" />
+        <p id="banner" class="banner" hidden></p>
+        <ul id="group-list" class="group-list"></ul>
+        <p id="empty" class="status" hidden></p>
+        <p id="action-error" class="error" hidden></p>
+        <div class="row">
+          <button id="refresh" class="btn btn--ghost">refresh</button>
+          <button id="lock" class="btn btn--ghost">lock</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="console__footer">
+      <span id="footer-status">status: locked</span>
+      <a class="footer-link" href="index.html">← pairing page</a>
+    </div>
+  </main>
+
+  <script src="groups.js"></script>
+</body>
+</html>
