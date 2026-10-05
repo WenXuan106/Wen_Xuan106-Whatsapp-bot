@@ -44,6 +44,16 @@ SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || "",
 //Telegram Bot Token
 TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || "",
 
+// Keeps the game points safe across redeploys on hosts that wipe the disk
+// (like Render's free plan) by saving a copy in a private GitHub Gist.
+// GITHUB_TOKEN: a *classic* personal access token with ONLY the "gist"
+//   permission (github.com/settings/tokens). Never commit it.
+// SCORES_GIST_ID: the id from your gist's URL — create a secret gist that
+//   contains a file named scores.json with {"users":{}} in it.
+// Leave both blank to keep the points only in data/scores.json.
+GITHUB_TOKEN: process.env.GITHUB_TOKEN || "",
+SCORES_GIST_ID: process.env.SCORES_GIST_ID || "",
+
 // Password for the group on/off page on the website (/groups.html). Pick
 // something long and private — anyone who has it can switch the bot on and
 // off in your groups. Leave blank to turn that page off completely.

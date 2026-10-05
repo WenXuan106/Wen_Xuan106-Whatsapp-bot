@@ -21,6 +21,7 @@ occasionally triggers a warning or ban on that number. The Telegram side uses th
 - `lib/` — shared pieces: scoring (`scores.js`), the profile and weather card images (`profilecard.js`, `weathercard.js`), the games, the ban list, warnings, civilguard, welcome messages, and so on
 - `public/` — the website (plain HTML/CSS/JS, no build step): the pairing page (`index.html`) and the group on/off switch (`groups.html`)
 - `lib/dashboard.js` — the password-protected API behind the group switch page
+- `lib/gistsync.js` — optional backup of the game points to a private GitHub Gist
 - `config.js` — prefix, port, session folder, API keys, owner settings
 
 ## Run it locally
@@ -70,6 +71,7 @@ All settings live in `config.js` and can be overridden with environment variable
 | `BOT_NAME` | Bot name shown in the menu and on the weather/profile cards |
 | `OWNER_NAME` | Shown as "Owner" in `!help` |
 | `OWNER_NUMBER` | Optional extra WhatsApp number (digits only, with country code) that counts as owner for `!stop`. Messages sent from the bot's own linked account always count |
+| `GITHUB_TOKEN` / `SCORES_GIST_ID` | Optional. Keep the game points safe across redeploys by saving a copy in a private GitHub Gist — see [Keeping scores across redeploys](#keeping-scores-across-redeploys) |
 | `DASHBOARD_PASSWORD` | Password for the group on/off page on the website. Leave blank to turn that page off |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
 | `TELEGRAM_OWNER_ID` | Your numeric Telegram user id, for owner-only commands like `!stop` |
@@ -177,8 +179,31 @@ profile picture in a round frame, name, level and XP bar, points, rank, wins, wi
 join date, and wins/losses/draws for each game. If someone has no profile picture (or it's hidden
 by their privacy settings), the card shows their first initial instead.
 
+Scores are saved in `data/scores.json`; to keep them across redeploys see [Keeping scores across redeploys](#keeping-scores-across-redeploys).
+
 Scores are global per person — one profile per WhatsApp number or Telegram account, shared across
 every chat the bot is in.
+
+## Keeping scores across redeploys
+
+On hosts that wipe the disk on every redeploy (Render's free plan, for example), `data/scores.json`
+is erased and everyone's points reset. To prevent that, the bot can keep a copy of the points in a
+private GitHub Gist and load it back at startup:
+
+1. Go to [gist.github.com](https://gist.github.com) and create a **secret** gist. Name the file `scores.json` and put `{"users":{}}` in it. After creating it, copy the gist's id — the long string at the end of its URL.
+2. Go to GitHub → **Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic)**. Tick **only** the `gist` permission, choose **No expiration**, and copy the token.
+3. Add two environment variables to your host (or `.env` locally) and redeploy:
+   `SCORES_GIST_ID=<the gist id>` and `GITHUB_TOKEN=<the token>`
+
+On startup the log should say `Scores loaded from the GitHub gist (N players)`. After that, every
+change is uploaded a few seconds later (several results close together become one upload), and
+once more when the host shuts the bot down for a redeploy.
+
+Good to know:
+- The token can read and write **all** your gists, so keep it secret and never commit it. If it expires or is revoked, saving to the gist stops (the log says so) and points since the last successful upload are lost on the next redeploy.
+- If the gist can't be read at startup (wrong id, bad token, GitHub unreachable), the bot still works and keeps points in `data/scores.json`, but it will **not** upload that run, so it can never overwrite your saved points with an empty list.
+- If two copies of the bot run at once (some hosts briefly overlap old and new deploys), the one that uploads last wins.
+- Only the scores are backed up this way. The ban list, warnings, welcome and civilguard settings, topmember counts, the group on/off switches, and the WhatsApp session still live on the local disk.
 
 ## Where data is stored
 

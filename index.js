@@ -51,6 +51,7 @@ const path = require("path");
 const config = require("./config");
 const { startSocket, getState, onUpdate, resumeSavedSession } = require("./lib/whatsapp");
 const { createDashboardRouter } = require("./lib/dashboard");
+const scores = require("./lib/scores");
 
 const app = express();
 app.use(express.json());
@@ -67,7 +68,11 @@ app.use("/api/groups", createDashboardRouter());
 // requests a pairing code, so it can't collide with a fresh pairing
 // attempt. Otherwise (no saved session), a socket is only created once
 // someone requests a pairing code below.
-resumeSavedSession();
+// Load the saved game points first (from the GitHub gist backup if one is
+// configured), so nothing is scored against an empty list while it loads.
+const scoresReady = scores.init();
+
+scoresReady.then(() => resumeSavedSession());
 
 // Website calls this after the user types their WhatsApp number.
 app.post("/api/pair", async (req, res) => {
@@ -136,4 +141,4 @@ app.listen(config.PORT, () => {
 });
 
 const { startTelegramBot } = require("./lib/telegram");
-startTelegramBot();
+scoresReady.then(() => startTelegramBot());
