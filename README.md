@@ -88,7 +88,7 @@ commands check the sender's admin status on whichever platform they're sent from
 
 **General**
 
-- `!help` — the command menu
+- `!help` — the command menu: a short list of numbered sections (`!1` General, `!2` Admin, `!3` Games, ...). Send `!1`, `!2`, ... — or `!help admin` — and the bot replies with a message listing every command in that section
 - `!ping`, `!milo` — check the bot is alive and see response time
 - `!profile` — your game profile card (see [Scoring and profiles](#scoring-and-profiles)); reply to or @mention someone to see theirs
 - `!pfp` — get someone's profile picture (reply, @mention, or use alone for your own)
@@ -248,14 +248,20 @@ module.exports = {
 It's picked up automatically — no need to register it anywhere else — **except on Telegram**, where
 you also add its name to `TELEGRAM_READY_COMMANDS` in `lib/telegram.js`. (Commands not on that list
 reply "isn't available on Telegram yet", so you can add WhatsApp-only commands safely.) To show it in
-the `!help` menu under a category, add it to `CATEGORIES` in `commands/help.js`; anything not listed
-there appears under "Other".
+the `!help` menu, add its name to a section's `commands` list in `SECTIONS` in `commands/help.js`
+(and, optionally, a usage hint plus one-line summary for it in `INFO` in the same file); a command
+that isn't in any section appears in an "OTHER" section at the end. Sections with no commands are
+skipped and the numbers (`!1`, `!2`, ...) adjust by themselves.
+
+A command file can also export `aliases: ["other", "names"]` — extra names that run the same
+command. `ctx.commandName` tells the command which name was typed (that's how `!1`–`!9` all
+open the right `!help` section).
 
 What's on `ctx` (identical on both platforms; see `lib/whatsapp.js` and `lib/telegram.js` for the
 exact code):
 
-- **Info:** `platform` (`"whatsapp"` or `"telegram"`), `chatId`, `senderId`, `senderName`, `isGroup`, `text`, `args`, `quotedText`, `commands`
-- **Sending:** `sendText(text)`, `sendImage(urlOrBuffer, caption)`, `sendSticker(buffer)`, `sendVoice(oggOpusBuffer)`, `sendMention(text, ids)` (put `@<ctx.shortId(id)>` in the text for each id), `reply(text)`
+- **Info:** `platform` (`"whatsapp"` or `"telegram"`), `chatId`, `senderId`, `senderName`, `commandName`, `isGroup`, `text`, `args`, `quotedText`, `commands`
+- **Sending:** `sendText(text)`, `sendImage(urlOrBuffer, caption)`, `sendSticker(buffer)`, `sendVoice(oggOpusBuffer)`, `sendMention(text, ids)` (put `@<ctx.shortId(id)>` in the text for each id; `*bold*` also turns into real bold on Telegram), `reply(text)`
 - **People and groups:** `getTargetUser()` (whoever is @mentioned or replied to), `getAdminStatus()` → `{ senderIsAdmin, botIsAdmin }`, `listMembers()`, `getGroupInfo()`, `removeMember(id)`, `setMemberAdmin(id, makeAdmin)`, `setGroupLocked(locked)`, `getProfilePictureUrl(id)`, `hasReply()`, `deleteReplied()`, `isOwner()`, `isBotId(id)`
 - **Platform-specific:** WhatsApp's `ctx` also exposes the raw `sock`, `msg`, `jid` and `getGroupMetadata` for things only WhatsApp can do (like `!status`). Telegram's `ctx` has `sendAnimation(...)`. Check `ctx.platform` before using either
 
