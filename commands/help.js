@@ -13,7 +13,7 @@ const SECTIONS = [
   {
     title: "ADMIN",
     icon: "🛡️",
-    commands: ["bot", "kick", "promote", "demote", "warn", "warnings", "ban", "unban", "mute", "unmute", "delete", "tagall", "groupinfo", "welcome", "civilguard"],
+    commands: ["bot", "kick", "promote", "demote", "warn", "unwarn", "warnings", "ban", "unban", "mute", "unmute", "delete", "tagall", "groupinfo", "welcome", "civilguard"],
   },
   { title: "GAMES", icon: "🎮", commands: ["trivia", "geography", "science", "answer", "math", "scramble", "hangman", "ttt", "rps"] },
   { title: "FUN", icon: "🎭", commands: ["8ball", "coinflip", "dice", "ship", "ash", "meme"] },
@@ -38,6 +38,7 @@ const INFO = {
   promote: ["@user", "Make someone an admin"],
   demote: ["@user", "Remove someone's admin rights"],
   warn: ["@user", "Warn a member (3 warnings = removed)"],
+  unwarn: ["@user [all]", "Remove one warning (or all of them)"],
   warnings: ["@user", "Check someone's warnings"],
   ban: ["@user", "Block someone from using the bot"],
   unban: ["@user", "Let them use the bot again"],
