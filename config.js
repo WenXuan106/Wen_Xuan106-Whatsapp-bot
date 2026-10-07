@@ -1,3 +1,9 @@
+// Reads a whole-number setting from the environment (0 is allowed).
+function envNumber(name, fallback) {
+  const value = parseInt(process.env[name], 10);
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
 module.exports = {
   // Prefix used to trigger commands, e.g. "!ping"
   PREFIX: process.env.PREFIX || "!",
@@ -20,6 +26,16 @@ module.exports = {
   // in addition to messages sent from the bot's own linked account
   // (fromMe). Leave blank if the fromMe check alone is enough for you.
   OWNER_NUMBER: process.env.OWNER_NUMBER || "",
+
+  // Command rate limit (anti-spam). A person who sends more than
+  // RATE_LIMIT_MAX_COMMANDS commands within RATE_LIMIT_WINDOW_SECONDS is
+  // ignored for RATE_LIMIT_BLOCK_SECONDS (they get one "slow down" notice).
+  // Heavy commands like !gpt also have their own per-command waits — see
+  // lib/ratelimit.js. The bot owner is never limited. Set
+  // RATE_LIMIT_MAX_COMMANDS=0 to turn the rate limit off completely.
+  RATE_LIMIT_MAX_COMMANDS: envNumber("RATE_LIMIT_MAX_COMMANDS", 5),
+  RATE_LIMIT_WINDOW_SECONDS: envNumber("RATE_LIMIT_WINDOW_SECONDS", 10),
+  RATE_LIMIT_BLOCK_SECONDS: envNumber("RATE_LIMIT_BLOCK_SECONDS", 30),
 
   // Official OpenAI API key, used by the !gpt command. Get one at
   // https://platform.openai.com/api-keys — without this set, !gpt will

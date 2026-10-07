@@ -75,6 +75,7 @@ All settings live in `config.js` and can be overridden with environment variable
 | `DASHBOARD_PASSWORD` | Password for the group on/off page on the website. Leave blank to turn that page off |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
 | `TELEGRAM_OWNER_ID` | Your numeric Telegram user id, for owner-only commands like `!stop` |
+| `RATE_LIMIT_MAX_COMMANDS` / `RATE_LIMIT_WINDOW_SECONDS` / `RATE_LIMIT_BLOCK_SECONDS` | Anti-spam limit, default 5 commands per 10 seconds then a 30-second pause. `RATE_LIMIT_MAX_COMMANDS=0` turns it off — see [Rate limit](#rate-limit) |
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | For `!gpt` (model defaults to `gpt-4o-mini`) |
 | `OPENWEATHER_API_KEY` | For `!weather` (free key at openweathermap.org) |
 | `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` | For `!spotify` (free keys at developer.spotify.com) |
@@ -127,6 +128,7 @@ commands check the sender's admin status on whichever platform they're sent from
 
 - `!kick`, `!promote`, `!demote` — reply to someone or @mention them
 - `!warn`, `!warnings` — 3 warnings and the member is removed
+- `!unwarn @user` — remove one warning from a member; `!unwarn @user all` clears all of them (also `!clearwarn`)
 - `!ban`, `!unban` — stop a member from using the bot's commands
 - `!mute`, `!unmute` — restrict the group so only admins can send messages
 - `!delete` — reply to a message with `!delete` to remove it
@@ -139,6 +141,19 @@ commands check the sender's admin status on whichever platform they're sent from
 **Owner**
 
 - `!stop` — shut the bot down completely (WhatsApp **and** Telegram, since it's one process). On WhatsApp, owner means the bot's own linked account or `OWNER_NUMBER`; on Telegram it's `TELEGRAM_OWNER_ID`
+
+## Rate limit
+
+To stop one person flooding the bot, every person (not every chat) is limited on both platforms:
+
+- **Flood limit:** more than 5 commands within 10 seconds and the person is ignored for 30 seconds. They get a single "slow down" notice and then silence, so the bot never adds to the spam itself.
+- **Heavy commands wait:** after using a heavy command, the same person has to wait before using that same command again — for example `!gpt` and `!gemini` 10 seconds, `!attp` and `!tts` 8, `!weather`, `!video`, `!song`, `!spotify`, `!lyrics`, `!profile` and `!pfp` 5. A command turned away this way doesn't count towards the flood limit. The waits are in `COMMAND_COOLDOWNS` in `lib/ratelimit.js`.
+- The bot owner (the bot's own WhatsApp account, `OWNER_NUMBER`, or `TELEGRAM_OWNER_ID`) is never limited.
+- Typed game guesses (scramble, math, hangman, tic-tac-toe moves) aren't commands, so they're not limited.
+
+Change the numbers with `RATE_LIMIT_MAX_COMMANDS`, `RATE_LIMIT_WINDOW_SECONDS` and
+`RATE_LIMIT_BLOCK_SECONDS` (see [Configuration](#configuration)); set `RATE_LIMIT_MAX_COMMANDS=0` to
+turn the flood limit off. The limit is kept in memory, so it resets when the bot restarts.
 
 ## Group switch on the website
 
