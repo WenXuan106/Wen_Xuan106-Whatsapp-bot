@@ -27,6 +27,12 @@ module.exports = {
   // (fromMe). Leave blank if the fromMe check alone is enough for you.
   OWNER_NUMBER: process.env.OWNER_NUMBER || "",
 
+  // Time zone used for the date and time shown at the top of !ping and !help.
+  // Use a name from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  // (for example "Asia/Singapore", "Europe/London", "America/New_York").
+  // Hosts usually run on UTC, so set this to match where your people are.
+  TIMEZONE: process.env.TIMEZONE || "Asia/Singapore",
+
   // Command rate limit (anti-spam). A person who sends more than
   // RATE_LIMIT_MAX_COMMANDS commands within RATE_LIMIT_WINDOW_SECONDS is
   // ignored for RATE_LIMIT_BLOCK_SECONDS (they get one "slow down" notice).

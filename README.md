@@ -74,6 +74,7 @@ All settings live in `config.js` and can be overridden with environment variable
 | `OWNER_NUMBER` | Optional extra WhatsApp number (digits only, with country code) that counts as owner for `!stop`. Messages sent from the bot's own linked account always count |
 | `GITHUB_TOKEN` / `SCORES_GIST_ID` | Optional. Keep the game points safe across redeploys by saving a copy in a private GitHub Gist — see [Keeping scores across redeploys](#keeping-scores-across-redeploys) |
 | `DASHBOARD_PASSWORD` | Password for the group on/off page on the website. Leave blank to turn that page off |
+| `TIMEZONE` | Time zone for the date and time shown at the top of `!ping` and `!help`, as a name like `Asia/Singapore` or `Europe/London`. Default `Asia/Singapore`. Hosts run on UTC, so set this to match your people |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
 | `TELEGRAM_OWNER_ID` | Your numeric Telegram user id, for owner-only commands like `!stop` |
 | `RATE_LIMIT_MAX_COMMANDS` / `RATE_LIMIT_WINDOW_SECONDS` / `RATE_LIMIT_BLOCK_SECONDS` | Anti-spam limit, default 5 commands per 10 seconds then a 30-second pause. `RATE_LIMIT_MAX_COMMANDS=0` turns it off — see [Rate limit](#rate-limit) |
@@ -90,8 +91,8 @@ commands check the sender's admin status on whichever platform they're sent from
 
 **General**
 
-- `!help` — the command menu: a short list of numbered sections (`!1` General, `!2` Admin, `!3` Games, ...). Send `!1`, `!2`, ... — or `!help admin` — and the bot replies with a message listing every command in that section
-- `!ping`, `!milo` — check the bot is alive and see response time
+- `!help` — the command menu, with the current date and time at the top: a short list of numbered sections (`!1` General, `!2` Admin, `!3` Games, ...). Send `!1`, `!2`, ... — or `!help admin` — and the bot replies with a message listing every command in that section
+- `!ping`, `!milo` — check the bot is alive and see response time (`!ping` also shows the current date and time at the top)
 - `!profile` — your game profile card (see [Scoring and profiles](#scoring-and-profiles)); reply to or @mention someone to see theirs
 - `!pfp` — get someone's profile picture (reply, @mention, or use alone for your own)
 - `!weather <city>` — weather card image plus a text report and 3-day outlook
