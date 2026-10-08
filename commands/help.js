@@ -15,7 +15,7 @@ const SECTIONS = [
     icon: "🛡️",
     commands: ["bot", "kick", "promote", "demote", "warn", "unwarn", "warnings", "ban", "unban", "mute", "unmute", "delete", "tagall", "groupinfo", "welcome", "civilguard"],
   },
-  { title: "GAMES", icon: "🎮", commands: ["trivia", "geography", "science", "answer", "math", "scramble", "hangman", "ttt", "rps"] },
+  { title: "GAMES", icon: "🎮", commands: ["trivia", "geography", "science", "answer", "math", "scramble", "hangman", "ttt", "rps", "wordle", "potato", "pass"] },
   { title: "FUN", icon: "🎭", commands: ["8ball", "coinflip", "dice", "ship", "ash", "meme"] },
   { title: "MEDIA", icon: "🎞️", commands: ["anime", "song", "spotify", "video", "lyrics", "vocaloid", "tts", "attp", "status"] },
   { title: "AI", icon: "🤖", commands: ["gpt", "gemini"] },
@@ -59,6 +59,9 @@ const INFO = {
   hangman: ["", "Guess the word letter by letter"],
   ttt: ["", "Tic-tac-toe with a friend"],
   rps: ["<rock|paper|scissors>", "Play against the bot"],
+  wordle: ["[word]", "Guess the secret 5-letter word together"],
+  potato: ["", "Hot potato — pass it before it explodes"],
+  pass: ["@user", "Pass the hot potato to someone"],
 
   "8ball": ["<question>", "Ask the magic 8-ball"],
   coinflip: ["", "Flip a coin"],
