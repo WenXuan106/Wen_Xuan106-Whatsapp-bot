@@ -1,4 +1,5 @@
 const config = require("../config");
+const clock = require("../lib/clock");
 
 function performanceRating(ms) {
   if (ms < 300) return { dot: "🟢", label: "Excellent" };
@@ -17,8 +18,13 @@ module.exports = {
     const ms = Math.max(0, Date.now() - sentAt);
     const perf = performanceRating(ms);
     const divider = "―――――――――――――――";
+    const { date, time } = clock.now(); // the current date and time, read right now
 
     const lines = [
+      `📅 ${date}`,
+      `🕒 ${time}`,
+      divider,
+      "",
       `🏓 *${config.BOT_NAME}*`,
       divider,
       "",

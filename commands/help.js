@@ -1,4 +1,5 @@
 const config = require("../config");
+const clock = require("../lib/clock");
 
 // The !help menu is split into numbered sections. "!help" shows the list of
 // sections; "!1", "!2", ... (or "!help admin") open one section in its own
@@ -120,6 +121,8 @@ function buildSections(commands) {
 function menuMessage(ctx, sections, totalCommands) {
   const p = config.PREFIX;
   const lines = [];
+  const { date, time } = clock.now({ seconds: false }); // the current date and time, read right now
+  lines.push(`📅 ${date}  •  🕒 ${time}`, "");
   lines.push(`╭━━『 *${config.BOT_NAME}* 』━━╮`, "");
   lines.push(`👋 Hello @${ctx.shortId(ctx.senderId)}!`);
   lines.push(`⚡ Prefix: ${p}   •   📦 ${totalCommands} commands`);
