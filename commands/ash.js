@@ -95,7 +95,7 @@ const SENTENCES = [
   "i ain’t gonna rizz u up cuz you’re not mine",
   "Spell out 'Biology'",
   "Dear passengers, in a few moments, we will arrive at: Cirebon station. If you end your trip at: Cirebon station, please prepare yourself and check your belongings. For your own safety, it is forbidden to open the train's door before the train completely stops. Thank you for choosing PT Kereta Api Indonesia. See you on the next trip. _KAI Train chime starts playing_",
-  "'pinhed' 🥀 'pinhead'"
+  "'pinhed' 🥀 'pinhead'",
   "When theres a hole theres a goal",
   "LAAAAAAA AHHH AAAAAAHHHHH AH! LALALAAAAA LALALALALALALAAAAAA! OK DONE, I SING OPERA ALDY",
   "glaciers are large masses of ice that rest on land of float on sea",
