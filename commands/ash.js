@@ -3,7 +3,7 @@
 const SENTENCES = [
   "WOI WOI WOI",
   "START POSTING",
-  "I ANGRY LIAO",
+  "RAYDEN ANGRY LIAO",
   "EH",
   "I CAME ALL THE WAY FROM CHINA ON TWO BICYCLE WHEEL TO SEE THIS",
   "🏞️ IS THIS A PARK OR A PLAYGROUND??",
@@ -25,8 +25,8 @@ const SENTENCES = [
   "NONSENSE",
   "📢 *YALL SPAM SOMEMORE WE BAN YALL FROM BOT YOU WANT?*",
   "WHAT IS THIS",
-  "Wen_Xuan106",
-  "WELCOME ONBOARD OF AERO✈︎HUB AIRLINE",
+  "ASH",
+  "WELCOME ONBOARD OF ASH AIRLINE",
   "THIS TRAIN SERVICE ENDS HERE, ALL PASSENGERS PLEASE ALIGHT. THANK YOU FOR TRAVELLING WITH SMRT.",
   "*WHO YOU THINK YOU ARE!?*",
   "A friendly reminder to stay hydrated! Drink more water to keep yourself healthy. 💧",
@@ -56,7 +56,7 @@ const SENTENCES = [
   "DOORS ARE CLOSING",
   "SMRT",
   "what the actual shucks bro",
-  "I SUMMON THE OWNER DEN YALL KNOW",
+  "I SUMMON THE RAYDEN DEN YALL KNOW",
   "SPAM SUMMORE SPAM SUMMORE",
   "YALL 把我们的话当成耳边风",
   "TELL YALL PAY ATTENTION IN CLASS, GO STUDY",
@@ -70,12 +70,12 @@ const SENTENCES = [
   "This video is sponsored by our sponsor, who, as you may have already correctly and undoubtedly assumed, is in fact the sponsor of this very video that you are currently watching. Yes, you heard that right: the sponsor sponsoring this video is none other than the sponsor who has sponsored this video, making them, by definition, the official sponsor of this sponsored video.Now, you might be wondering: “Who exactly is sponsoring this video?” Well, I’m glad you asked, because the answer is incredibly important and absolutely worth repeating: the sponsor is the sponsor of the video. And who sponsored the sponsor? Nobody, because the sponsor is already the sponsor. And what did they sponsor? This video. Which video? This video. The very video in which we are currently talking about the sponsor who sponsored the video.So, to recap: this video has a sponsor. That sponsor is sponsoring the video. The sponsor of the video is therefore the sponsor, and the video is sponsored by that sponsor. This means that the sponsor is, in fact, sponsoring the sponsored video that they are the sponsor of.And with that incredibly important clarification out of the way, and now that we have established beyond any reasonable doubt that the sponsor of this video is indeed the sponsor sponsoring this video, let’s finally stop talking about the sponsor sponsoring the video and continue with the actual video.",
   "GOOD BOY",
   "GOOD GIRL",
-  "Max Verstappen wins the AERO✈︎HUB grand prix!",
+  "Max Verstappen wins the ASH grand prix!",
   "my admin bu jian le",
   "AHEM",
   "Want a break from the ads? If you tap now to watch a short video you'll get 30 minutes of ad free music! Yes, really! If you tap now you'll get 30 minutes of ad free music! So what are you waiting for? I'm still waiting.. Why aren't you tapping? Don't you want 30 minutes of ad free music? If you tap now and watch the short video you'll get 30 minutes of ad free music! It's that easy! If you want to be free from the ads forever consider buying spotify premium! With spotify premium, you get ad free music, forever! And if you tap below you can get the first 3 months for free! Terms and Conditions apply",
   "BRO I SAW A FLASH",
-  "!Wen_Xuan106",
+  "!ash",
   "BROSKI",
   "bro",
   "In the universe, we have the atmosphre, exosphere, lithosphere and biosphere. But losing you is my biggestsphere.",
@@ -97,7 +97,7 @@ const SENTENCES = [
 ];
 
 module.exports = {
-  name: "Wen_Xuan106",
+  name: "ash",
   description: "Says something random",
   async execute(ctx) {
     const line = SENTENCES[Math.floor(Math.random() * SENTENCES.length)];
