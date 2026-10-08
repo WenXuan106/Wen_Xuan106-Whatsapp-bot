@@ -138,7 +138,7 @@ const SENTENCES = [
   "Mangroves help in reducing costal errosions because the roots of the plants help to trap and stabilise the loose sediements so they will not be washed away by tides, currents or waves. The trunks of the plants cause friction between the waves, thus making the waves lose energy wheh travelling towards the coastal area and it reduces the chances of coastal errosion",
   "Apt apt apt apt apt apt uh uh huh uh huh don’t you want me like I want you babyy don’t you need me like I need you nowww",
   "Monkey xi monkey jun",
-  "Merry Christmas everyone”,
+  "Merry Christmas everyone",
   "Oceans are large masses of water",
   "NI HOWDY",
   "'I am just gonna put my foot on the floor, and I am not lifting until I see God or checkered flag'-Hail Melon",
