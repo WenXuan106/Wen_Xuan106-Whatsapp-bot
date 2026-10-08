@@ -22,6 +22,7 @@ occasionally triggers a warning or ban on that number. The Telegram side uses th
 - `public/` — the website (plain HTML/CSS/JS, no build step): the pairing page (`index.html`) and the group on/off switch (`groups.html`)
 - `lib/dashboard.js` — the password-protected API behind the group switch page
 - `lib/gistsync.js` — optional backup of the game points to a private GitHub Gist
+- `lib/wordle.js`, `lib/wordlewords.js`, `lib/potato.js` — the Wordle and Hot Potato games (`wordlewords.js` holds the word lists: the secret word is always one of the common words in `ANSWERS`, and any word in `VALID` is accepted as a guess)
 - `config.js` — prefix, port, session folder, API keys, owner settings
 
 ## Run it locally
@@ -105,6 +106,8 @@ commands check the sender's admin status on whichever platform they're sent from
 - `!hangman` — type letters to guess
 - `!ttt` — tic-tac-toe; you're X, the first other player to move is O; type 1–9
 - `!rps <rock|paper|scissors>` — against the bot
+- `!wordle` — start a Wordle: everyone in the chat shares 6 guesses at a secret 5-letter word. Guess with `!wordle <word>` (🟩 right spot, 🟨 wrong spot, ⬜ not in the word); `!wordle` again shows the board, `!wordle stop` ends it (whoever started it, a group admin, or the owner). Works in groups and DMs
+- `!potato` — hot potato (groups only): whoever starts it holds the potato and passes it on with `!pass @user` (or by replying to someone with `!pass`) before the hidden 20–45 second fuse runs out. Whoever is holding it when it explodes loses; everyone else who touched it wins points. It needs 3+ players to score; `!potato stop` ends it early
 - `!8ball`, `!coinflip`, `!dice`, `!ship`, `!ash`, `!meme` — just for fun (no points)
 
 **Media**
@@ -185,13 +188,15 @@ Every game feeds a shared scoring system (`lib/scores.js`):
 | `!hangman` | 20 to whoever finishes the word; a lost round counts as a loss for everyone who guessed |
 | `!ttt` | 25 for the winner (the other player gets a loss); 5 each for a draw |
 | `!rps` | 5 for a win, 1 for a draw |
+| `!wordle` | 20 to whoever guesses the word, plus 5 for every guess still unused (so 45 for getting it on guess 1); a lost game counts as a loss for everyone who guessed |
+| `!potato` | 10 for everyone who touched the potato and wasn't holding it when it exploded; a loss for the holder. Needs 3+ players |
 
 You can change any of these numbers in the `POINTS` object in `lib/scores.js`.
 
 Points set your level (Level 2 at 25 points, Level 3 at 100, Level 4 at 225, and so on, with titles
 from Rookie up to Legend). `!profile` draws a card in the same style as the weather card: your
 profile picture in a round frame, name, level and XP bar, points, rank, wins, win rate, best game,
-join date, and wins/losses/draws for each game. If someone has no profile picture (or it's hidden
+join date, and wins/losses/draws for each of the 8 games. If someone has no profile picture (or it's hidden
 by their privacy settings), the card shows their first initial instead.
 
 Scores are saved in `data/scores.json`; to keep them across redeploys see [Keeping scores across redeploys](#keeping-scores-across-redeploys).
