@@ -120,7 +120,6 @@ const SENTENCES = [
   "Chat suddenly went quiet",
   "60+ broski",
   "Sponsored by AEROHUB",
-  "when shipping jay and ashleigh is alway 100%",
   "I was a girl in the village doing alright. Then I became a princess overnightt.",
   "Add posts from youtube",
   "i put too much soy sauce yeah",
