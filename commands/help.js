@@ -19,7 +19,7 @@ const SECTIONS = [
   { title: "GAMES", icon: "🎮", commands: ["trivia", "geography", "science", "answer", "math", "scramble", "hangman", "ttt", "rps", "wordle", "potato", "pass"] },
   { title: "FUN", icon: "🎭", commands: ["8ball", "coinflip", "dice", "ship", "ash", "meme"] },
   { title: "MEDIA", icon: "🎞️", commands: ["anime", "song", "spotify", "video", "lyrics", "vocaloid", "tts", "attp", "status"] },
-  { title: "AI", icon: "🤖", commands: ["gpt", "gemini"] },
+  { title: "AI", icon: "🤖", commands: ["ai", "gpt", "gemini"] },
   { title: "UTILITY", icon: "🌍", commands: ["weather", "translate", "topmembers"] },
   { title: "OWNER", icon: "👑", commands: ["stop"] },
 ];
@@ -81,6 +81,7 @@ const INFO = {
   attp: ["<text>", "Blinking-text sticker"],
   status: ["<text>", "Post a WhatsApp Status (WhatsApp only)"],
 
+  ai: ["<question>", "Free AI chat (Llama) — reply to a message to ask about it"],
   gpt: ["<question>", "Ask OpenAI's GPT"],
   gemini: ["<question>", "Ask Google's Gemini"],
 
