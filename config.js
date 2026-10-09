@@ -43,6 +43,15 @@ module.exports = {
   RATE_LIMIT_WINDOW_SECONDS: envNumber("RATE_LIMIT_WINDOW_SECONDS", 10),
   RATE_LIMIT_BLOCK_SECONDS: envNumber("RATE_LIMIT_BLOCK_SECONDS", 30),
 
+  // Free AI for the !ai command, from Groq (free tier, no credit card).
+  // Get a key at https://console.groq.com/keys. Without a key, !ai falls back
+  // to a keyless community service that works but can be slow or unavailable.
+  GROQ_API_KEY: process.env.GROQ_API_KEY || "",
+
+  // Model !ai asks Groq for. If Groq retires it, pick a current one from
+  // https://console.groq.com/docs/models and set GROQ_MODEL.
+  GROQ_MODEL: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+
   // Official OpenAI API key, used by the !gpt command. Get one at
   // https://platform.openai.com/api-keys — without this set, !gpt will
   // tell users the bot isn't configured instead of trying (and failing)

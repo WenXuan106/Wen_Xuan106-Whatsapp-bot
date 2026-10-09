@@ -78,6 +78,7 @@ All settings live in `config.js` and can be overridden with environment variable
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token from @BotFather |
 | `TELEGRAM_OWNER_ID` | Your numeric Telegram user id, for owner-only commands like `!stop` |
 | `RATE_LIMIT_MAX_COMMANDS` / `RATE_LIMIT_WINDOW_SECONDS` / `RATE_LIMIT_BLOCK_SECONDS` | Anti-spam limit, default 5 commands per 10 seconds then a 30-second pause. `RATE_LIMIT_MAX_COMMANDS=0` turns it off — see [Rate limit](#rate-limit) |
+| `GROQ_API_KEY` / `GROQ_MODEL` | Free AI for `!ai`. Get a key at console.groq.com/keys (no credit card). The model defaults to `llama-3.3-70b-versatile`; change it if Groq retires it |
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | For `!gpt` (model defaults to `gpt-4o-mini`) |
 | `OPENWEATHER_API_KEY` | For `!weather` (free key at openweathermap.org) |
 | `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` | For `!spotify` (free keys at developer.spotify.com) |
@@ -125,6 +126,7 @@ commands check the sender's admin status on whichever platform they're sent from
 
 **AI**
 
+- `!ai <question>` — a **free** AI chat (Llama). Reply to any message with `!ai summarize this` to ask about that message. Uses Groq's free tier when `GROQ_API_KEY` is set; without a key it falls back to a keyless community service that can be slow or unavailable — see [Free AI setup](#free-ai-setup-ai)
 - `!gpt <question>` — OpenAI (needs `OPENAI_API_KEY`)
 - `!gemini <question>`
 
@@ -146,12 +148,26 @@ commands check the sender's admin status on whichever platform they're sent from
 
 - `!stop` — shut the bot down completely (WhatsApp **and** Telegram, since it's one process). On WhatsApp, owner means the bot's own linked account or `OWNER_NUMBER`; on Telegram it's `TELEGRAM_OWNER_ID`
 
+## Free AI setup (`!ai`)
+
+`!ai` works without any setup by using a keyless community service, but that service is best-effort
+(it can be slow, rate-limited, or disappear). For a reliable free AI, add a Groq key — it's free and
+needs no credit card:
+
+1. Sign up at [console.groq.com](https://console.groq.com) and open **API Keys → Create API Key**.
+2. Add it to your host's environment variables (or `.env`) as `GROQ_API_KEY=gsk_...` and redeploy.
+
+Groq's free tier has usage limits; when they're hit, `!ai` tells people to try again in a minute (and
+each person has to wait 6 seconds between `!ai` commands). If Groq ever retires the default model, `!ai`
+tells the owner to pick a current one from console.groq.com/docs/models and set `GROQ_MODEL`.
+Long answers are split into several messages automatically so Telegram's length limit isn't hit.
+
 ## Rate limit
 
 To stop one person flooding the bot, every person (not every chat) is limited on both platforms:
 
 - **Flood limit:** more than 5 commands within 10 seconds and the person is ignored for 30 seconds. They get a single "slow down" notice and then silence, so the bot never adds to the spam itself.
-- **Heavy commands wait:** after using a heavy command, the same person has to wait before using that same command again — for example `!gpt` and `!gemini` 10 seconds, `!attp` and `!tts` 8, `!weather`, `!video`, `!song`, `!spotify`, `!lyrics`, `!profile` and `!pfp` 5. A command turned away this way doesn't count towards the flood limit. The waits are in `COMMAND_COOLDOWNS` in `lib/ratelimit.js`.
+- **Heavy commands wait:** after using a heavy command, the same person has to wait before using that same command again — for example `!gpt` and `!gemini` 10 seconds, `!attp` and `!tts` 8, `!weather`, `!video`, `!song`, `!spotify`, `!lyrics`, `!profile` and `!pfp` 5, `!ai` 6. A command turned away this way doesn't count towards the flood limit. The waits are in `COMMAND_COOLDOWNS` in `lib/ratelimit.js`.
 - The bot owner (the bot's own WhatsApp account, `OWNER_NUMBER`, or `TELEGRAM_OWNER_ID`) is never limited.
 - Typed game guesses (scramble, math, hangman, tic-tac-toe moves) aren't commands, so they're not limited.
 
