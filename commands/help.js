@@ -20,7 +20,7 @@ const SECTIONS = [
   { title: "FUN", icon: "🎭", commands: ["8ball", "coinflip", "dice", "ship", "ash", "meme"] },
   { title: "MEDIA", icon: "🎞️", commands: ["anime", "song", "spotify", "video", "lyrics", "vocaloid", "tts", "attp", "status"] },
   { title: "AI", icon: "🤖", commands: ["ai", "gpt", "gemini"] },
-  { title: "UTILITY", icon: "🌍", commands: ["weather", "translate", "topmembers"] },
+  { title: "UTILITY", icon: "🌍", commands: ["weather", "desmos", "translate", "topmembers"] },
   { title: "OWNER", icon: "👑", commands: ["stop"] },
 ];
 
@@ -86,6 +86,7 @@ const INFO = {
   gemini: ["<question>", "Ask Google's Gemini"],
 
   weather: ["<city>", "Weather card + 3-day outlook"],
+  desmos: ["<function>", "Graph functions of x, e.g. x^2; sin(x)"],
   translate: ["<language> <text>", "Translate text"],
   topmembers: ["", "Most active members here"],
 
