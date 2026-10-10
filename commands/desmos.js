@@ -1,6 +1,6 @@
 const { Resvg } = require("@resvg/resvg-js");
 const config = require("../config");
-const { parseGraphRequest, buildGraphSvg } = require("../lib/graphcard");
+const { parseGraphRequest, buildGraphSvg, summarise } = require("../lib/graphcard");
 
 const USAGE = [
   "📈 *Desmos graph*",
@@ -74,6 +74,13 @@ module.exports = {
       const resvg = new Resvg(svg, { font: { loadSystemFonts: true } });
       const png = resvg.render().asPng();
       const notes = [];
+      const info = summarise(request);
+      if (info.shapes > 1 && info.bounds) {
+        const r = (n) => Math.round(n);
+        notes.push(
+          `📐 Read ${info.items} lines (${Math.round(input.length / 1000)}k characters${fileText ? ", from the file" : ""}). They cover x ${r(info.bounds.x[0])}–${r(info.bounds.x[1])} and y ${r(info.bounds.y[0])}–${r(info.bounds.y[1])}.`
+        );
+      }
       if (request.repaired?.length) {
         const n = request.repaired.length;
         notes.push(
