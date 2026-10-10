@@ -97,6 +97,7 @@ commands check the sender's admin status on whichever platform they're sent from
 - `!profile` — your game profile card (see [Scoring and profiles](#scoring-and-profiles)); reply to or @mention someone to see theirs
 - `!pfp` — get someone's profile picture (reply, @mention, or use alone for your own)
 - `!weather <city>` — weather card image plus a text report and 3-day outlook
+- `!desmos <function>` (aliases `!graph`, `!plot`) — graph up to 6 functions of x as a Desmos-style image, e.g. `!desmos x^2; sin(x)`. Set the window with `x:-5..5 y:-2..2`
 - `!translate <language> <text>` — or reply to a message with `!translate <language>`
 - `!topmembers` — the 5 most active members in the group by message count
 
@@ -167,7 +168,7 @@ Long answers are split into several messages automatically so Telegram's length 
 To stop one person flooding the bot, every person (not every chat) is limited on both platforms:
 
 - **Flood limit:** more than 5 commands within 10 seconds and the person is ignored for 30 seconds. They get a single "slow down" notice and then silence, so the bot never adds to the spam itself.
-- **Heavy commands wait:** after using a heavy command, the same person has to wait before using that same command again — for example `!gpt` and `!gemini` 10 seconds, `!attp` and `!tts` 8, `!weather`, `!video`, `!song`, `!spotify`, `!lyrics`, `!profile` and `!pfp` 5, `!ai` 6. A command turned away this way doesn't count towards the flood limit. The waits are in `COMMAND_COOLDOWNS` in `lib/ratelimit.js`.
+- **Heavy commands wait:** after using a heavy command, the same person has to wait before using that same command again — for example `!gpt` and `!gemini` 10 seconds, `!attp` and `!tts` 8, `!weather`, `!desmos`, `!video`, `!song`, `!spotify`, `!lyrics`, `!profile` and `!pfp` 5, `!ai` 6. A command turned away this way doesn't count towards the flood limit. The waits are in `COMMAND_COOLDOWNS` in `lib/ratelimit.js`.
 - The bot owner (the bot's own WhatsApp account, `OWNER_NUMBER`, or `TELEGRAM_OWNER_ID`) is never limited.
 - Typed game guesses (scramble, math, hangman, tic-tac-toe moves) aren't commands, so they're not limited.
 
