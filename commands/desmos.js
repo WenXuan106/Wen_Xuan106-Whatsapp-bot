@@ -59,7 +59,22 @@ module.exports = {
       const svg = buildGraphSvg(request);
       const resvg = new Resvg(svg, { font: { loadSystemFonts: true } });
       const png = resvg.render().asPng();
-      await ctx.sendImage(png);
+      const notes = [];
+      if (request.repaired?.length) {
+        const n = request.repaired.length;
+        notes.push(
+          `ℹ️ ${n === 1 ? "A line was" : `${n} lines were`} cut off (item ${request.repaired.slice(0, 5).join(", ")}${n > 5 ? ", …" : ""}), so I finished ${n === 1 ? "it" : "them"} by repeating the last number. ${n === 1 ? "It" : "They"} may look slightly off.`
+        );
+      }
+      if (request.skipped?.length) {
+        const n = request.skipped.length;
+        notes.push(
+          `⚠️ Skipped ${n} line${n === 1 ? "" : "s"} I couldn't read:\n${request.skipped.slice(0, 2).join("\n")}${n > 2 ? `\n…and ${n - 2} more` : ""}`
+        );
+      }
+      let caption = notes.join("\n\n") || undefined;
+      if (caption && caption.length > 900) caption = caption.slice(0, 897) + "…";
+      await ctx.sendImage(png, caption);
     } catch (err) {
       console.error("desmos command failed:", err.message);
       await ctx.sendText("❌ Something went wrong drawing that graph.");
