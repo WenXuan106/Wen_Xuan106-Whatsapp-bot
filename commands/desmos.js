@@ -20,6 +20,8 @@ const USAGE = [
   "\\left(((1-t)^{3}\\cdot 5+3(1-t)^{2}t\\cdot 6),((1-t)^{3}\\cdot 9+t^{3}\\cdot 2)\\right)",
   "…or reply to a message that contains them with !desmos. The picture zooms to fit.",
   "",
+  "Big drawings (thousands of lines) don't fit in one chat message — save them in a .txt file and send it as a document with the caption !desmos (or reply to the file with !desmos). Up to 8 MB.",
+  "",
   "Math: + - * / ^, brackets, pi, e, sin cos tan asin acos atan sinh cosh tanh sqrt cbrt abs ln log exp floor ceil round sign.",
 ].join("\n");
 
@@ -42,8 +44,20 @@ module.exports = {
   aliases: ["graph", "plot"],
   description: "Graph functions, lines and curves as an image, e.g. !desmos x^2; sin(x)",
   async execute(ctx) {
+    // A .txt file sent with !desmos (or replied to with !desmos) is read too — it can be far longer than a chat message.
+    let fileText = null;
+    try {
+      fileText = ctx.getDocumentText ? await ctx.getDocumentText() : null;
+    } catch (err) {
+      return ctx.sendText(`❌ ${err.message}`);
+    }
+    if (fileText && fileText.length > 300000) {
+      await ctx.sendText("⏳ That's a big one — drawing it now, this can take a few seconds…");
+    }
+
     // Replying to a message with !desmos graphs that message.
-    const input = requestText(ctx) || String(ctx.quotedText || "").trim();
+    const typed = requestText(ctx);
+    const input = fileText ? `${typed}\n${fileText}`.trim() : typed || String(ctx.quotedText || "").trim();
     if (!input) {
       return ctx.sendText(USAGE);
     }
