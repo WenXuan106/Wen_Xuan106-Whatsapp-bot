@@ -1,6 +1,6 @@
 const { Resvg } = require("@resvg/resvg-js");
 const config = require("../config");
-const { parseGraphRequest, buildGraphSvg, summarise } = require("../lib/graphcard");
+const { parseGraphRequest, buildGraphSvg, summarise, parseColourPrefix, buildColourChartSvg } = require("../lib/graphcard");
 
 const USAGE = [
   "📈 *Desmos graph*",
@@ -14,6 +14,9 @@ const USAGE = [
   "• !desmos tan(x) x:-6.28..6.28 y:-5..5   (set the window)",
   "• !desmos x^2+y^2=25   (circles and other equations in x and y)",
   "• !desmos a=2; b=3; y=a*sin(b*x)   (define values, then use them)",
+  "• !desmos blue x^2   (pick the colour — put it first)",
+  "• !desmos dark green   + a file   (shades: pale, light, dark, deep)",
+  "• !desmos colours   (shows every colour and shade)",
   "",
   "You can also paste lines copied from Desmos (LaTeX), like:",
   "x=733\\left\\{6\\le y\\le 8\\right\\}",
@@ -55,8 +58,18 @@ module.exports = {
       await ctx.sendText("⏳ That's a big one — drawing it now, this can take a few seconds…");
     }
 
+    const typedRaw = requestText(ctx);
+
+    // "!desmos colours" shows the colour chart.
+    if (!fileText && /^(colou?rs?|palette)$/i.test(typedRaw)) {
+      const chart = new Resvg(buildColourChartSvg(), { font: { loadSystemFonts: true } }).render().asPng();
+      return ctx.sendImage(chart, "🎨 Put a colour first, e.g. !desmos dark blue  (or a code like #ff8800)");
+    }
+
+    // A colour (with an optional shade) at the start: "blue", "dark blue", "#ff8800".
+    const { colour, rest: typed } = parseColourPrefix(typedRaw);
+
     // Replying to a message with !desmos graphs that message.
-    const typed = requestText(ctx);
     const input = fileText ? `${typed}\n${fileText}`.trim() : typed || String(ctx.quotedText || "").trim();
     if (!input) {
       return ctx.sendText(USAGE);
@@ -65,6 +78,7 @@ module.exports = {
     let request;
     try {
       request = parseGraphRequest(input);
+      request.colour = colour;
     } catch (err) {
       return ctx.sendText(`❌ ${err.message}\n\nTry: !desmos x^2`);
     }
