@@ -2,6 +2,20 @@ const { Resvg } = require("@resvg/resvg-js");
 const config = require("../config");
 const { parseGraphRequest, buildGraphSvg, summarise, parseColourPrefix, buildColourChartSvg } = require("../lib/graphcard");
 
+/**
+ * Draws the SVG to a PNG. If the full-size picture can't be made (for example not enough memory on a small
+ * phone) it tries again at half size, so people still get a graph.
+ */
+function renderPng(svg) {
+  const options = { font: { loadSystemFonts: true } };
+  try {
+    return new Resvg(svg, options).render().asPng();
+  } catch (err) {
+    console.error("desmos: full-size render failed, trying half size:", err && err.stack ? err.stack : err);
+    return new Resvg(svg, { ...options, fitTo: { mode: "width", value: 1280 } }).render().asPng();
+  }
+}
+
 const USAGE = [
   "📈 *Desmos graph*",
   "",
@@ -62,7 +76,7 @@ module.exports = {
 
     // "!desmos colours" shows the colour chart.
     if (!fileText && /^(colou?rs?|palette)$/i.test(typedRaw)) {
-      const chart = new Resvg(buildColourChartSvg(), { font: { loadSystemFonts: true } }).render().asPng();
+      const chart = renderPng(buildColourChartSvg());
       return ctx.sendImage(chart, "🎨 Put a colour first, e.g. !desmos dark blue  (or a code like #ff8800)");
     }
 
@@ -85,8 +99,7 @@ module.exports = {
 
     try {
       const svg = buildGraphSvg(request);
-      const resvg = new Resvg(svg, { font: { loadSystemFonts: true } });
-      const png = resvg.render().asPng();
+      const png = renderPng(svg);
       const notes = [];
       const info = summarise(request);
       if (info.shapes > 1 && info.bounds) {
@@ -111,8 +124,9 @@ module.exports = {
       if (caption && caption.length > 900) caption = caption.slice(0, 897) + "…";
       await ctx.sendImage(png, caption);
     } catch (err) {
-      console.error("desmos command failed:", err.message);
-      await ctx.sendText("❌ Something went wrong drawing that graph.");
+      console.error("desmos command failed:", err && err.stack ? err.stack : err);
+      const reason = String(err && err.message ? err.message : err).replace(/\s+/g, " ").slice(0, 200);
+      await ctx.sendText(`❌ Something went wrong drawing that graph.\nReason: ${reason}`);
     }
   },
 };
