@@ -78,7 +78,7 @@ const INFO = {
   lyrics: ["<song>", "Look up song lyrics"],
   vocaloid: ["<name>", "Search Vocaloid songs and characters"],
   tts: ["[lang] <text>", "Text to speech voice note"],
-  attp: ["<text>", "Blinking-text sticker"],
+  attp: ["<text>", "Text sticker: pick Normal, Rainbow or Pop-Up"],
   status: ["<text>", "Post a WhatsApp Status (WhatsApp only)"],
 
   ai: ["<question>", "Free AI chat (Llama) — reply to a message to ask about it"],
