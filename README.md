@@ -122,7 +122,7 @@ commands check the sender's admin status on whichever platform they're sent from
 - `!vocaloid <song>` / `!vocaloid character <name>` — VocaDB search
 - `!anime <name>` / `!anime character <name>` / `!anime <nom|poke|cry|kiss|pat|hug|wink>`
 - `!tts [language code] <text>` — text to speech as a voice note
-- `!attp <text>` — blinking-text sticker (on Telegram it's sent as a looping animation instead, since Telegram can't show animated WebP stickers)
+- `!attp <text>` — text sticker, drawn in Google Fonts (Lilita One, Bangers, Luckiest Guy, Chewy, Permanent Marker, Pacifico — the files and licences are in `fonts/google/`; characters a font can't draw, like emoji, fall back to a system font). The bot shows a menu; reply `1` for a normal (still) sticker, `2` for an animated rainbow background, or `3` for a pop-up sticker where the words pop in one by one. The menu expires after 60 seconds, and only the person who sent `!attp` can answer it. On Telegram the animated styles are sent as looping animations instead, since Telegram can't show animated WebP stickers. On Telegram groups the bot has to be able to see plain messages (privacy mode off), or you answer by replying to the bot's menu.
 - `!status` — post a WhatsApp Status update. **WhatsApp only** — Telegram bots can't post Stories, so there it just says so
 
 **AI**
